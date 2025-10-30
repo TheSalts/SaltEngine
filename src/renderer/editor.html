@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="ko">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>SaltEngine - 에디터</title>
+        <link rel="stylesheet" href="styles/editor.css" />
+    </head>
+    <body>
+        <div class="editor-container">
+            <!-- 탭 바 -->
+            <div id="tabBar" class="tab-bar"></div>
+
+            <!-- 메인 영역 -->
+            <div class="editor-main">
+                <!-- 툴바 -->
+                <div class="toolbar">
+                    <div class="toolbar-group">
+                        <button id="addItemDisplayBtn" class="tool-btn" title="Item Display 추가">
+                            📦 Item
+                        </button>
+                        <button id="addTextDisplayBtn" class="tool-btn" title="Text Display 추가">
+                            📝 Text
+                        </button>
+                    </div>
+                    <div class="toolbar-group">
+                        <button id="saveBtn" class="tool-btn" title="저장">
+                            💾 저장
+                        </button>
+                        <button id="saveAsBtn" class="tool-btn" title="다른 이름으로 저장">
+                            💾 다른 이름으로
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 캔버스 영역 -->
+                <div class="canvas-container">
+                    <canvas id="editorCanvas"></canvas>
+                </div>
+
+                <!-- 속성 패널 -->
+                <div id="propertyPanel" class="property-panel">
+                    <div class="property-panel-header">
+                        <h3>속성</h3>
+                    </div>
+                    <div id="propertyPanelContent" class="property-panel-content">
+                        <p class="no-selection">오브젝트를 선택하세요</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <script type="module" src="../../dist/renderer/editor.js"></script>
+    </body>
+</html>
+

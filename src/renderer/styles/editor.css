@@ -1,0 +1,277 @@
+:root {
+    --bg-primary: #1e1e1e;
+    --bg-secondary: #252526;
+    --bg-tertiary: #2d2d30;
+    --text-primary: #cccccc;
+    --text-secondary: #858585;
+    --accent: #007acc;
+    --accent-hover: #005a9e;
+    --border: #3e3e42;
+    --tab-active: #007acc;
+    --tab-inactive: #2d2d30;
+    --tab-hover: #3e3e42;
+    --canvas-bg: #181818;
+    --selection: #007acc;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen,
+        Ubuntu, Cantarell, sans-serif;
+    background-color: var(--bg-primary);
+    color: var(--text-primary);
+    height: 100vh;
+    overflow: hidden;
+}
+
+.editor-container {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+}
+
+/* 탭 바 */
+.tab-bar {
+    display: flex;
+    background-color: var(--bg-secondary);
+    border-bottom: 1px solid var(--border);
+    overflow-x: auto;
+    min-height: 36px;
+}
+
+.tab {
+    display: flex;
+    align-items: center;
+    padding: 0.5rem 1rem;
+    background-color: var(--tab-inactive);
+    border-right: 1px solid var(--border);
+    cursor: pointer;
+    user-select: none;
+    white-space: nowrap;
+    min-width: 120px;
+    max-width: 200px;
+}
+
+.tab:hover {
+    background-color: var(--tab-hover);
+}
+
+.tab.active {
+    background-color: var(--tab-active);
+    color: white;
+}
+
+.tab-label {
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    margin-right: 0.5rem;
+}
+
+.tab-close {
+    background: none;
+    border: none;
+    color: var(--text-secondary);
+    cursor: pointer;
+    font-size: 1rem;
+    padding: 0;
+    width: 1.2rem;
+    height: 1.2rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 2px;
+}
+
+.tab-close:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+    color: var(--text-primary);
+}
+
+.tab-add {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.5rem 1rem;
+    background-color: var(--bg-secondary);
+    border-right: 1px solid var(--border);
+    cursor: pointer;
+    color: var(--text-secondary);
+    font-size: 1.2rem;
+    min-width: 40px;
+}
+
+.tab-add:hover {
+    background-color: var(--tab-hover);
+    color: var(--text-primary);
+}
+
+/* 메인 영역 */
+.editor-main {
+    display: flex;
+    flex: 1;
+    overflow: hidden;
+}
+
+/* 툴바 */
+.toolbar {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    padding: 1rem;
+    background-color: var(--bg-secondary);
+    border-right: 1px solid var(--border);
+    width: 200px;
+    overflow-y: auto;
+}
+
+.toolbar-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 0.5rem;
+}
+
+.toolbar-group:last-child {
+    border-bottom: none;
+    margin-bottom: 0;
+}
+
+.tool-btn {
+    padding: 0.75rem;
+    background-color: var(--bg-tertiary);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    color: var(--text-primary);
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: all 0.2s;
+    text-align: left;
+}
+
+.tool-btn:hover {
+    background-color: var(--bg-primary);
+    border-color: var(--accent);
+}
+
+.tool-btn:active {
+    background-color: var(--tab-hover);
+}
+
+/* 캔버스 영역 */
+.canvas-container {
+    flex: 1;
+    position: relative;
+    background-color: var(--canvas-bg);
+    overflow: hidden;
+}
+
+#editorCanvas {
+    display: block;
+    width: 100%;
+    height: 100%;
+    cursor: crosshair;
+}
+
+/* 속성 패널 */
+.property-panel {
+    display: flex;
+    flex-direction: column;
+    width: 300px;
+    background-color: var(--bg-secondary);
+    border-left: 1px solid var(--border);
+    overflow: hidden;
+}
+
+.property-panel-header {
+    padding: 1rem;
+    border-bottom: 1px solid var(--border);
+    background-color: var(--bg-tertiary);
+}
+
+.property-panel-header h3 {
+    font-size: 1rem;
+    font-weight: 600;
+}
+
+.property-panel-content {
+    flex: 1;
+    padding: 1rem;
+    overflow-y: auto;
+}
+
+.no-selection {
+    color: var(--text-secondary);
+    text-align: center;
+    margin-top: 2rem;
+}
+
+/* 속성 폼 */
+.property-form-group {
+    margin-bottom: 1rem;
+}
+
+.property-form-group label {
+    display: block;
+    margin-bottom: 0.25rem;
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+    font-weight: 500;
+}
+
+.property-form-group input,
+.property-form-group select,
+.property-form-group textarea {
+    width: 100%;
+    padding: 0.5rem;
+    background-color: var(--bg-tertiary);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    color: var(--text-primary);
+    font-size: 0.9rem;
+}
+
+.property-form-group input:focus,
+.property-form-group select:focus,
+.property-form-group textarea:focus {
+    outline: none;
+    border-color: var(--accent);
+}
+
+.property-form-group input[type="number"] {
+    width: 100%;
+}
+
+.property-form-group textarea {
+    resize: vertical;
+    min-height: 80px;
+    font-family: inherit;
+}
+
+/* 속성 그룹 */
+.property-group {
+    margin-bottom: 1.5rem;
+}
+
+.property-group-header {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 0.75rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid var(--border);
+}
+
+.property-group-content {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+

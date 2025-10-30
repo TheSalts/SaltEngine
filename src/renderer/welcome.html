@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="ko">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>SaltEngine - 프로젝트 선택</title>
+        <link rel="stylesheet" href="styles/welcome.css" />
+    </head>
+    <body>
+        <div class="welcome-container">
+            <div class="welcome-content">
+                <h1 class="welcome-title">SaltEngine</h1>
+                <p class="welcome-subtitle">마인크래프트 2D 게임 엔진 에디터</p>
+
+                <div class="button-group">
+                    <button id="openProjectBtn" class="btn btn-primary">프로젝트 열기</button>
+                    <button id="newProjectBtn" class="btn btn-secondary">새 프로젝트 만들기</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 새 프로젝트 생성 모달 -->
+        <div id="newProjectModal" class="modal hidden">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2>새 프로젝트 만들기</h2>
+                    <button class="modal-close" id="closeModalBtn">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label for="projectName">프로젝트 이름</label>
+                        <div class="input-group">
+                            <input type="text" id="projectName" placeholder="Project" />
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="projectPath">프로젝트 경로</label>
+                        <div class="input-group">
+                            <input type="text" id="projectPath" readonly placeholder="프로젝트 폴더를 선택하세요" />
+                            <button id="selectProjectPathBtn" class="btn-small">찾아보기</button>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>
+                            <input type="checkbox" id="useExistingPaths" />
+                            기존 datapack/resourcepack 경로 사용
+                        </label>
+                    </div>
+
+                    <div id="pathOptions" class="path-options">
+                        <div class="form-group">
+                            <label for="datapackPath">Datapack 경로</label>
+                            <div class="input-group">
+                                <input
+                                    type="text"
+                                    id="datapackPath"
+                                    readonly
+                                    placeholder="datapack 폴더를 선택하세요"
+                                />
+                                <button id="selectDatapackPathBtn" class="btn-small">찾아보기</button>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="resourcepackPath">Resourcepack 경로</label>
+                            <div class="input-group">
+                                <input
+                                    type="text"
+                                    id="resourcepackPath"
+                                    readonly
+                                    placeholder="resourcepack 폴더를 선택하세요"
+                                />
+                                <button id="selectResourcepackPathBtn" class="btn-small">찾아보기</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="aspectRatio">모니터 비율</label>
+                        <select id="aspectRatio">
+                            <option value="16:9" selected>16:9 (기본값)</option>
+                            <option value="16:10">16:10</option>
+                            <option value="21:9">21:9</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button id="cancelBtn" class="btn btn-secondary">취소</button>
+                    <button id="createProjectBtn" class="btn btn-primary">만들기</button>
+                </div>
+            </div>
+        </div>
+
+        <script type="module" src="../../dist/renderer/welcome.js"></script>
+    </body>
+</html>

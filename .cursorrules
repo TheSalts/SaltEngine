@@ -1,0 +1,36 @@
+# SaltEngine 프로젝트 규칙
+
+## 언어 및 프레임워크
+- TypeScript를 사용합니다
+- Electron 프레임워크를 사용합니다
+- ES Modules (type: "module")을 사용합니다
+- TypeScript strict 모드를 준수합니다
+
+## 코드 스타일
+- 함수와 클래스에만 주석을 작성합니다 (JSDOC)
+- 한국어로 응답합니다
+- 변수명은 camelCase를 사용합니다
+- 파일명은 camelCase를 사용합니다
+
+## 프로젝트 구조
+- `src/main.ts`: Electron 메인 프로세스
+- `src/renderer/`: 렌더러 프로세스 파일들
+- `src/util/`: 유틸리티 함수들
+- `dist/`: 빌드 출력 디렉토리 (gitignore됨)
+- + more...
+
+## 타입스크립트
+- 모든 타입을 명시적으로 작성합니다
+- any 타입 사용을 피합니다
+- strict 모드 설정을 준수합니다
+- noUncheckedIndexedAccess를 고려하여 배열/객체 접근 시 안전성을 확보합니다
+
+## 빌드 및 실행
+- 빌드: `npm run build` (tsc 실행)
+- 실행: `npm start` (빌드 후 electron 실행)
+- 빌드 출력은 `dist/` 디렉토리에 생성됩니다
+
+## 일반 규칙
+- 불필요한 의존성을 추가하지 않습니다
+- 기존 코드 스타일을 일관되게 유지합니다
+- 에러 처리를 명시적으로 작성합니다
