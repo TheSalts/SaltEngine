@@ -10,6 +10,7 @@ let projectName: string = "";
  * 웰컴 스크린 초기화
  */
 document.addEventListener("DOMContentLoaded", () => {
+    const projectNameInput = document.getElementById("projectName") as HTMLInputElement;
     const openProjectBtn = document.getElementById("openProjectBtn");
     const newProjectBtn = document.getElementById("newProjectBtn");
     const modal = document.getElementById("newProjectModal");
@@ -20,12 +21,18 @@ document.addEventListener("DOMContentLoaded", () => {
     const selectDatapackPathBtn = document.getElementById("selectDatapackPathBtn");
     const selectResourcepackPathBtn = document.getElementById("selectResourcepackPathBtn");
     const useExistingPathsCheckbox = document.getElementById("useExistingPaths") as HTMLInputElement;
-    const pathOptions = document.getElementById("pathOptions");
 
     if (!window.electronAPI) {
         console.error("electronAPI가 초기화되지 않았습니다.");
         return;
     }
+
+    projectNameInput.addEventListener("input", (event) => {
+        projectName = (event.target as HTMLInputElement).value ?? "project";
+        if (projectPath) {
+            setProjectPath(projectPath.substring(0, projectPath.lastIndexOf("/") + 1) + projectName);
+        }
+    });
 
     // 프로젝트 열기 버튼
     openProjectBtn?.addEventListener("click", async () => {
@@ -56,29 +63,11 @@ document.addEventListener("DOMContentLoaded", () => {
         resetForm();
     });
 
-    // 기존 경로 사용 체크박스
-    useExistingPathsCheckbox?.addEventListener("change", (e) => {
-        const checked = (e.target as HTMLInputElement).checked;
-        if (pathOptions) {
-            if (checked) {
-                pathOptions.classList.remove("hidden");
-            } else {
-                pathOptions.classList.add("hidden");
-            }
-        }
-    });
-
     // 프로젝트 경로 선택
     selectProjectPathBtn?.addEventListener("click", async () => {
         try {
             const path = await window.electronAPI.selectFolder("프로젝트 폴더 선택");
-            if (path) {
-                projectPath = path;
-                const input = document.getElementById("projectPath") as HTMLInputElement;
-                if (input) {
-                    input.value = path;
-                }
-            }
+            if (path) setProjectPath(path + "/" + projectName);
         } catch (error) {
             console.error("폴더 선택 실패:", error);
         }
@@ -122,36 +111,23 @@ document.addEventListener("DOMContentLoaded", () => {
             alert("프로젝트 경로를 선택해주세요.");
             return;
         }
-        let name = document.getElementById("projectName") as HTMLInputElement;
-        projectName = name.value ?? "project";
-
-        const useExistingPaths = useExistingPathsCheckbox?.checked ?? false;
         const aspectRatioSelect = document.getElementById("aspectRatio") as HTMLSelectElement;
         const aspectRatio = (aspectRatioSelect?.value ?? "16:9") as AspectRatio;
 
         let finalDatapackPath: string;
         let finalResourcepackPath: string;
 
-        if (useExistingPaths) {
-            if (!datapackPath || !resourcepackPath) {
-                alert("datapack과 resourcepack 경로를 모두 선택해주세요.");
-                return;
-            }
-            finalDatapackPath = datapackPath;
-            finalResourcepackPath = resourcepackPath;
-        } else {
-            // 프로젝트 경로 내에 폴더 생성
-            finalDatapackPath = `${projectPath}/datapack`;
-            finalResourcepackPath = `${projectPath}/resourcepack`;
+        // 프로젝트 경로 내에 폴더 생성
+        finalDatapackPath = datapackPath ? datapackPath : `${projectPath}/saltengine_dp`;
+        finalResourcepackPath = resourcepackPath ? resourcepackPath : `${projectPath}/saltengine_rp`;
 
-            try {
-                await window.electronAPI.createFolder(finalDatapackPath);
-                await window.electronAPI.createFolder(finalResourcepackPath);
-            } catch (error) {
-                console.error("폴더 생성 실패:", error);
-                alert("폴더 생성에 실패했습니다.");
-                return;
-            }
+        try {
+            await window.electronAPI.createFolder(finalDatapackPath);
+            await window.electronAPI.createFolder(finalResourcepackPath);
+        } catch (error) {
+            console.error("폴더 생성 실패:", error);
+            alert("폴더 생성에 실패했습니다.");
+            return;
         }
 
         const project = createProject({
@@ -165,6 +141,14 @@ document.addEventListener("DOMContentLoaded", () => {
         await switchToEditor(project);
     });
 });
+
+function setProjectPath(path: string): string {
+    const input = document.getElementById("projectPath") as HTMLInputElement;
+    if (input) {
+        input.value = path;
+    }
+    return (projectPath = path);
+}
 
 /**
  * 프로젝트 파일을 로드합니다.
