@@ -1,3 +1,5 @@
+import type { Animation } from "./animation.js";
+
 /**
  * GameObject의 기본 인터페이스
  * 모든 게임 오브젝트는 이 인터페이스를 구현해야 합니다.
@@ -8,13 +10,15 @@ export interface GameObject {
     position: Vector2;
     rotation: number;
     scale: Vector2;
+    layer?: number;
+    animationId?: string;
 }
 
 /**
  * 게임 오브젝트 타입 열거형
  */
 export enum GameObjectType {
-    ITEM_DISPLAY = "item_display",
+    ASSET = "asset",
     TEXT_DISPLAY = "text_display",
 }
 
@@ -27,11 +31,11 @@ export interface Vector2 {
 }
 
 /**
- * ItemDisplay 오브젝트의 추가 속성
+ * Asset 오브젝트의 추가 속성
  */
-export interface ItemDisplayProperties {
-    itemId?: string;
-    itemTag?: string;
+export interface AssetProperties {
+    assetId?: string;
+    assetPath?: string;
     transformType?: string;
 }
 
@@ -46,25 +50,25 @@ export interface TextDisplayProperties {
 }
 
 /**
- * ItemDisplay 게임 오브젝트
+ * Asset 게임 오브젝트
  */
-export class ItemDisplayObject implements GameObject {
+export class AssetObject implements GameObject {
     id: string;
     type: GameObjectType;
     position: Vector2;
     rotation: number;
     scale: Vector2;
-    properties: ItemDisplayProperties;
+    properties: AssetProperties;
 
     constructor(
         id: string,
         position: Vector2 = { x: 0, y: 0 },
         rotation: number = 0,
         scale: Vector2 = { x: 1, y: 1 },
-        properties: ItemDisplayProperties = {}
+        properties: AssetProperties = {}
     ) {
         this.id = id;
-        this.type = GameObjectType.ITEM_DISPLAY;
+        this.type = GameObjectType.ASSET;
         this.position = position;
         this.rotation = rotation;
         this.scale = scale;

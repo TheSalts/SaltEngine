@@ -45,6 +45,21 @@ export class TabBar {
     }
 
     /**
+     * 모든 탭을 제거합니다.
+     */
+    removeAllTabs(): void {
+        for (const [sceneId] of this.tabs) {
+            const tabElement = this.tabs.get(sceneId);
+            if (tabElement) {
+                tabElement.remove();
+            }
+        }
+        this.tabs.clear();
+        this.activeTabId = null;
+        this.render();
+    }
+
+    /**
      * 탭을 제거합니다.
      */
     removeTab(sceneId: string): void {
@@ -126,6 +141,10 @@ export class TabBar {
         const label = document.createElement("span");
         label.className = "tab-label";
         label.textContent = scene.name;
+        label.addEventListener("dblclick", (e) => {
+            e.stopPropagation();
+            this.editTabName(scene.id);
+        });
 
         const closeBtn = document.createElement("button");
         closeBtn.className = "tab-close";
@@ -143,6 +162,60 @@ export class TabBar {
         });
 
         return tab;
+    }
+
+    /**
+     * 탭 이름을 편집합니다.
+     */
+    private editTabName(sceneId: string): void {
+        const tabElement = this.tabs.get(sceneId);
+        if (!tabElement) return;
+
+        const label = tabElement.querySelector(".tab-label") as HTMLElement;
+        if (!label) return;
+
+        const currentName = label.textContent ?? "";
+        const input = document.createElement("input");
+        input.type = "text";
+        input.value = currentName;
+        input.className = "tab-name-input";
+        input.style.width = `${label.offsetWidth}px`;
+        input.style.height = `${label.offsetHeight}px`;
+        input.style.padding = "0";
+        input.style.margin = "0";
+        input.style.border = "1px solid var(--accent)";
+        input.style.background = "var(--bg-tertiary)";
+        input.style.color = "var(--text-primary)";
+        input.style.fontSize = "inherit";
+        input.style.fontFamily = "inherit";
+
+        const finishEdit = (save: boolean) => {
+            if (save && input.value.trim()) {
+                label.textContent = input.value.trim();
+                const event = new CustomEvent("scene-name-changed", {
+                    detail: { sceneId, name: input.value.trim() },
+                });
+                window.dispatchEvent(event);
+            }
+            input.remove();
+            label.style.display = "";
+        };
+
+        input.addEventListener("blur", () => finishEdit(true));
+        input.addEventListener("keydown", (e) => {
+            if (e.key === "Enter") {
+                e.preventDefault();
+                finishEdit(true);
+            } else if (e.key === "Escape") {
+                e.preventDefault();
+                finishEdit(false);
+            }
+        });
+
+        label.style.display = "none";
+        tabElement.insertBefore(input, label);
+        input.focus();
+        input.select();
     }
 
     /**

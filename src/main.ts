@@ -5,6 +5,7 @@ import { pathToFileURL } from "node:url";
 import { registerProjectIpcHandlers } from "./ipc/projectIpc.js";
 
 let mainWindow: BrowserWindow | null = null;
+let settingsWindow: BrowserWindow | null = null;
 let currentProject: unknown = null;
 
 // ES Modules에서 __dirname 사용을 위한 설정
@@ -80,6 +81,47 @@ app.on("ready", () => {
         currentProject = null;
         createWelcomeWindow();
         return true;
+    });
+
+    // 설정 창 열기
+    ipcMain.handle("window:open-settings", (_event: unknown) => {
+        if (settingsWindow) {
+            settingsWindow.focus();
+            return;
+        }
+
+        const windowOptions: Electron.BrowserWindowConstructorOptions = {
+            width: 600,
+            height: 500,
+            modal: true,
+            webPreferences: {
+                contextIsolation: true,
+                nodeIntegration: false,
+                preload: join(__dirname, "preload.js"),
+            },
+        };
+
+        if (mainWindow) {
+            windowOptions.parent = mainWindow;
+        }
+
+        settingsWindow = new BrowserWindow(windowOptions);
+
+        const projectRoot = resolve(__dirname, "..");
+        const settingsPath = resolve(projectRoot, "src/renderer/settings.html");
+        settingsWindow.loadURL(pathToFileURL(settingsPath).href);
+
+        settingsWindow.on("closed", () => {
+            settingsWindow = null;
+        });
+    });
+
+    // 설정 창 닫기
+    ipcMain.handle("window:close-settings", (_event: unknown) => {
+        if (settingsWindow) {
+            settingsWindow.close();
+            settingsWindow = null;
+        }
     });
 
     // 초기 화면은 웰컴 스크린

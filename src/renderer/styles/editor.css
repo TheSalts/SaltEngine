@@ -275,3 +275,36 @@ body {
     gap: 0.5rem;
 }
 
+/* 저장 알림 */
+.save-notification {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    padding: 0.75rem 1.5rem;
+    background-color: var(--bg-tertiary);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    color: var(--text-primary);
+    font-size: 0.9rem;
+    z-index: 1000;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+    display: none;
+}
+
+.save-notification-saving {
+    background-color: #2d3748;
+    border-color: #4a5568;
+}
+
+.save-notification-success {
+    background-color: #22543d;
+    border-color: #2f855a;
+    color: #c6f6d5;
+}
+
+.save-notification-error {
+    background-color: #742a2a;
+    border-color: #9b2c2c;
+    color: #fed7d7;
+}
+

@@ -31,6 +31,7 @@
         // "noUnusedParameters": true,
         // "noFallthroughCasesInSwitch": true,
         // "noPropertyAccessFromIndexSignature": true,
+        "removeComments": true,
 
         // Recommended Options
         "strict": true,

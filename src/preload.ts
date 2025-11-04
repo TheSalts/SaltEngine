@@ -61,6 +61,51 @@ const electronAPI = {
      * 현재 프로젝트 데이터 가져오기
      */
     getCurrentProject: () => ipcRenderer.invoke("project:get-current"),
+
+    /**
+     * 폴더 내에서 프로젝트 파일 찾기
+     */
+    findProjectFiles: (folderPath: string) =>
+        ipcRenderer.invoke("project:find-files", folderPath),
+
+    /**
+     * 이미지 파일 선택
+     */
+    selectImageFile: () => ipcRenderer.invoke("asset:select-image"),
+
+    /**
+     * 파일 복사
+     */
+    copyFile: (sourcePath: string, destPath: string) =>
+        ipcRenderer.invoke("fs:copy-file", sourcePath, destPath),
+
+    /**
+     * 파일 확장자 가져오기
+     */
+    getFileExtension: (filePath: string) =>
+        ipcRenderer.invoke("fs:get-extension", filePath),
+
+    /**
+     * 폴더 내의 모든 파일 읽기
+     */
+    readDir: (folderPath: string) =>
+        ipcRenderer.invoke("fs:read-dir", folderPath),
+
+    /**
+     * 설정 창 열기
+     */
+    openSettings: () => ipcRenderer.invoke("window:open-settings"),
+
+    /**
+     * 설정 창 닫기
+     */
+    closeSettings: () => ipcRenderer.invoke("window:close-settings"),
+
+    /**
+     * 이미지 파일을 base64로 읽기
+     */
+    readImageAsBase64: (filePath: string) =>
+        ipcRenderer.invoke("fs:read-image-base64", filePath),
 };
 
 contextBridge.exposeInMainWorld("electronAPI", electronAPI);

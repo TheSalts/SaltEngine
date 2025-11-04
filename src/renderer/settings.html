@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="ko">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>SaltEngine - 설정</title>
+        <link rel="stylesheet" href="styles/settings.css" />
+    </head>
+    <body>
+        <div class="settings-container">
+            <div class="settings-header">
+                <h1>설정</h1>
+                <button id="closeSettingsBtn" class="close-btn">×</button>
+            </div>
+            <div class="settings-content">
+                <div class="settings-section">
+                    <h2>언어 설정</h2>
+                    <div class="form-group">
+                        <label for="languageSelect">언어</label>
+                        <select id="languageSelect">
+                            <option value="ko-kr" selected>한국어</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <script type="module" src="../../dist/renderer/settings.js"></script>
+    </body>
+</html>
+

@@ -1,4 +1,5 @@
 import type { Project, AspectRatio } from "../types/project.js";
+import type { Scene } from "../types/scene.js";
 import { createProject } from "../types/project.js";
 
 let projectPath: string | null = null;
@@ -21,6 +22,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const selectDatapackPathBtn = document.getElementById("selectDatapackPathBtn");
     const selectResourcepackPathBtn = document.getElementById("selectResourcepackPathBtn");
     const useExistingPathsCheckbox = document.getElementById("useExistingPaths") as HTMLInputElement;
+    const settingsBtn = document.getElementById("settingsBtn");
 
     if (!window.electronAPI) {
         console.error("electronAPI가 초기화되지 않았습니다.");
@@ -37,9 +39,9 @@ document.addEventListener("DOMContentLoaded", () => {
     // 프로젝트 열기 버튼
     openProjectBtn?.addEventListener("click", async () => {
         try {
-            const filePath = await window.electronAPI.openProjectDialog();
-            if (filePath) {
-                await loadProject(filePath);
+            const folderPath = await window.electronAPI.selectFolder("프로젝트 폴더 선택");
+            if (folderPath) {
+                await loadProjectFromFolder(folderPath);
             }
         } catch (error) {
             console.error("프로젝트 열기 실패:", error);
@@ -67,7 +69,7 @@ document.addEventListener("DOMContentLoaded", () => {
     selectProjectPathBtn?.addEventListener("click", async () => {
         try {
             const path = await window.electronAPI.selectFolder("프로젝트 폴더 선택");
-            if (path) setProjectPath(path + "/" + projectName);
+            if (path) setProjectPath(path + "/" + (projectName || "project"));
         } catch (error) {
             console.error("폴더 선택 실패:", error);
         }
@@ -113,6 +115,8 @@ document.addEventListener("DOMContentLoaded", () => {
         }
         const aspectRatioSelect = document.getElementById("aspectRatio") as HTMLSelectElement;
         const aspectRatio = (aspectRatioSelect?.value ?? "16:9") as AspectRatio;
+        const minecraftVersionSelect = document.getElementById("minecraftVersion") as HTMLSelectElement;
+        const minecraftVersion = minecraftVersionSelect?.value ?? "1.21.8";
 
         let finalDatapackPath: string;
         let finalResourcepackPath: string;
@@ -136,9 +140,15 @@ document.addEventListener("DOMContentLoaded", () => {
             datapackPath: finalDatapackPath,
             resourcepackPath: finalResourcepackPath,
             aspectRatio,
+            minecraftVersion,
         });
 
         await switchToEditor(project);
+    });
+
+    // 설정 버튼
+    settingsBtn?.addEventListener("click", () => {
+        window.electronAPI.openSettings?.();
     });
 });
 
@@ -151,18 +161,45 @@ function setProjectPath(path: string): string {
 }
 
 /**
- * 프로젝트 파일을 로드합니다.
+ * 폴더에서 프로젝트를 로드합니다.
  */
-async function loadProject(filePath: string): Promise<void> {
+async function loadProjectFromFolder(folderPath: string): Promise<void> {
     try {
-        const data = await window.electronAPI.readProjectFile(filePath);
+        // 폴더 내에서 .salt.json 파일 찾기
+        const projectFiles = await window.electronAPI.findProjectFiles(folderPath);
+        if (!projectFiles || projectFiles.length === 0) {
+            alert("프로젝트 파일(.salt.json)을 찾을 수 없습니다.");
+            return;
+        }
+
+        // 첫 번째 프로젝트 파일 로드
+        const projectFilePath = projectFiles[0];
+        const data = await window.electronAPI.readProjectFile(projectFilePath);
+
+        // scenes 폴더에서 Scene 파일들 로드
+        const scenesFolder = `${folderPath}/scenes`;
+        const sceneFiles = await window.electronAPI.readDir(scenesFolder);
+        const scenes: Scene[] = [];
+
+        for (const sceneFile of sceneFiles) {
+            if (sceneFile.endsWith(".json")) {
+                try {
+                    const sceneData = await window.electronAPI.readProjectFile(sceneFile);
+                    scenes.push(sceneData as Scene);
+                } catch (error) {
+                    console.error(`Scene 파일 로드 실패: ${sceneFile}`, error);
+                }
+            }
+        }
+
         const project: Project = {
             name: data.name,
-            path: filePath.replace(/\.salt\.json$/, ""),
-            datapackPath: data.metadata?.datapackPath ?? "",
-            resourcepackPath: data.metadata?.resourcepackPath ?? "",
+            path: folderPath,
+            datapackPath: data.datapackPath ?? data.metadata?.datapackPath ?? "",
+            resourcepackPath: data.resourcepackPath ?? data.metadata?.resourcepackPath ?? "",
             aspectRatio: data.aspectRatio,
-            scenes: data.scenes,
+            minecraftVersion: data.minecraftVersion ?? "1.21.8",
+            scenes: scenes,
         };
         await switchToEditor(project);
     } catch (error) {

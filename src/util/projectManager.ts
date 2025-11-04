@@ -1,4 +1,5 @@
 import type { Project } from "../types/project.js";
+import type { Scene } from "../types/scene.js";
 import { serializeProject } from "./fileSystem.js";
 
 /**
@@ -10,6 +11,22 @@ export async function saveProject(project: Project): Promise<boolean> {
     }
 
     try {
+        // scenes 폴더 생성
+        const scenesFolder = `${project.path}/scenes`;
+        await window.electronAPI.createFolder(scenesFolder);
+
+        // 각 Scene을 개별 파일로 저장
+        for (let i = 0; i < project.scenes.length; i++) {
+            const scene = project.scenes[i];
+            if (scene) {
+                const sceneFileName = `scene${i + 1}.json`;
+                const sceneFilePath = `${scenesFolder}/${sceneFileName}`;
+                const sceneData = JSON.stringify(scene, null, 2);
+                await window.electronAPI.writeProjectFile(sceneFilePath, sceneData);
+            }
+        }
+
+        // 프로젝트 파일 저장
         const filePath = `${project.path}/${project.name}.salt.json`;
         const serialized = serializeProject(project);
         await window.electronAPI.writeProjectFile(filePath, serialized);

@@ -1,6 +1,7 @@
 import type { GameObject } from "../../types/gameObject.js";
 import { GameObjectType } from "../../types/gameObject.js";
-import type { ItemDisplayProperties, TextDisplayProperties } from "../../types/gameObject.js";
+import type { AssetProperties, TextDisplayProperties } from "../../types/gameObject.js";
+import { t } from "../../util/i18n.js";
 
 /**
  * 속성 패널 컴포넌트
@@ -24,6 +25,24 @@ export class PropertyPanel {
      */
     showObjectProperties(obj: GameObject): void {
         this.contentContainer.innerHTML = "";
+
+        // 삭제 버튼
+        const deleteButton = document.createElement("button");
+        deleteButton.textContent = "삭제";
+        deleteButton.className = "delete-button";
+        deleteButton.style.width = "100%";
+        deleteButton.style.padding = "8px";
+        deleteButton.style.marginBottom = "10px";
+        deleteButton.style.backgroundColor = "#d32f2f";
+        deleteButton.style.color = "white";
+        deleteButton.style.border = "none";
+        deleteButton.style.borderRadius = "4px";
+        deleteButton.style.cursor = "pointer";
+        deleteButton.addEventListener("click", () => {
+            const event = new CustomEvent("delete-object", { detail: obj });
+            window.dispatchEvent(event);
+        });
+        this.contentContainer.appendChild(deleteButton);
 
         // 기본 속성
         this.addPropertyGroup("Transform", () => {
@@ -51,8 +70,8 @@ export class PropertyPanel {
 
         // 타입별 속성
         switch (obj.type) {
-            case GameObjectType.ITEM_DISPLAY:
-                this.showItemDisplayProperties(obj as any);
+            case GameObjectType.ASSET:
+                this.showAssetProperties(obj as any);
                 break;
             case GameObjectType.TEXT_DISPLAY:
                 this.showTextDisplayProperties(obj as any);
@@ -61,16 +80,28 @@ export class PropertyPanel {
     }
 
     /**
-     * ItemDisplay 속성을 표시합니다.
+     * Asset 속성을 표시합니다.
      */
-    private showItemDisplayProperties(obj: GameObject & { properties: ItemDisplayProperties }): void {
-        this.addPropertyGroup("Item Display", () => {
-            this.addTextInput("Item ID", obj.properties.itemId ?? "", (value) => {
-                obj.properties.itemId = value;
+    private showAssetProperties(obj: GameObject & { properties: AssetProperties }): void {
+        this.addPropertyGroup("Asset", () => {
+            this.addTextInput("Asset ID", obj.id, (value) => {
+                // Asset ID는 obj.id로 변경
+                (obj as any).id = value;
                 this.notifyPropertyChanged();
             });
-            this.addTextInput("Item Tag", obj.properties.itemTag ?? "", (value) => {
-                obj.properties.itemTag = value;
+            this.addTextInput("Asset Path", obj.properties.assetPath ?? "", (value) => {
+                obj.properties.assetPath = value;
+                this.notifyPropertyChanged();
+            });
+            // 크기 속성 추가
+            const width = (obj as any).width ?? 40;
+            const height = (obj as any).height ?? 40;
+            this.addNumberInput("Width", width, (value) => {
+                (obj as any).width = value;
+                this.notifyPropertyChanged();
+            });
+            this.addNumberInput("Height", height, (value) => {
+                (obj as any).height = value;
                 this.notifyPropertyChanged();
             });
         });
@@ -252,7 +283,7 @@ export class PropertyPanel {
      * 선택 없음 상태를 표시합니다.
      */
     showNoSelection(): void {
-        this.contentContainer.innerHTML = '<p class="no-selection">오브젝트를 선택하세요</p>';
+        this.contentContainer.innerHTML = `<p class="no-selection">${t("editor.noSelection")}</p>`;
     }
 
     /**

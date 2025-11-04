@@ -20,6 +20,7 @@ export interface Project {
     datapackPath: string;
     resourcepackPath: string;
     aspectRatio: AspectRatio;
+    minecraftVersion: string;
     scenes: Scene[];
 }
 
@@ -32,6 +33,7 @@ export interface CreateProjectOptions {
     datapackPath: string;
     resourcepackPath: string;
     aspectRatio?: AspectRatio;
+    minecraftVersion?: string;
     scenes?: Scene[];
 }
 
@@ -45,6 +47,7 @@ export function createProject(options: CreateProjectOptions): Project {
         datapackPath: options.datapackPath,
         resourcepackPath: options.resourcepackPath,
         aspectRatio: options.aspectRatio ?? "16:9",
+        minecraftVersion: options.minecraftVersion ?? "1.21.8",
         scenes: options.scenes ?? [],
     };
 }
@@ -56,10 +59,11 @@ export interface SaltProjectData {
     name: string;
     version: string;
     aspectRatio: AspectRatio;
-    scenes: Scene[];
-    metadata?: {
-        datapackPath?: string;
-        resourcepackPath?: string;
+    minecraftVersion: string;
+    scenes: string[];
+    datapackPath: string;
+    resourcepackPath: string;
+    metadata: {
         createdAt?: string;
         updatedAt?: string;
     };
