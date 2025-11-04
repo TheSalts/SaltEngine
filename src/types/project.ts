@@ -1,20 +1,14 @@
 import type { Scene } from "./scene.js";
 import { createScene } from "./scene.js";
 
-/**
- * 모니터 비율 타입
- */
 export type AspectRatio = "16:9" | "16:10" | "21:9";
+
 export enum AspectRatioEnum {
     ratio16v9 = "16:9",
     ratio16v10 = "16:10",
     ratio21v9 = "21:9",
 }
 
-/**
- * Project 인터페이스
- * 프로젝트의 모든 정보를 담고 있습니다.
- */
 export interface Project {
     name: string;
     path: string;
@@ -25,9 +19,6 @@ export interface Project {
     scenes: Scene[];
 }
 
-/**
- * 새 프로젝트 생성 시 사용하는 옵션
- */
 export interface CreateProjectOptions {
     name: string;
     path: string;
@@ -38,11 +29,7 @@ export interface CreateProjectOptions {
     scenes?: Scene[];
 }
 
-/**
- * Project를 생성하는 헬퍼 함수
- */
 export function createProject(options: CreateProjectOptions): Project {
-    // 기본 Scene 생성
     const defaultScene = createScene("scene_1", {
         name: "Scene 1",
         gameObjects: [],
@@ -59,9 +46,6 @@ export function createProject(options: CreateProjectOptions): Project {
     };
 }
 
-/**
- * .salt.json 파일의 직렬화 구조
- */
 export interface SaltProjectData {
     name: string;
     version: string;

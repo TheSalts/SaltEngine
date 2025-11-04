@@ -8,9 +8,6 @@ let datapackPath: string | null = null;
 let resourcepackPath: string | null = null;
 let projectName: string = "";
 
-/**
- * 웰컴 스크린 초기화
- */
 document.addEventListener("DOMContentLoaded", () => {
     const projectNameInput = document.getElementById("projectName") as HTMLInputElement;
     const openProjectBtn = document.getElementById("openProjectBtn");
@@ -37,7 +34,6 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     });
 
-    // 프로젝트 열기 버튼
     openProjectBtn?.addEventListener("click", async () => {
         try {
             const folderPath = await window.electronAPI.selectFolder("프로젝트 폴더 선택");
@@ -50,12 +46,10 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     });
 
-    // 새 프로젝트 버튼
     newProjectBtn?.addEventListener("click", () => {
         modal?.classList.remove("hidden");
     });
 
-    // 모달 닫기
     closeModalBtn?.addEventListener("click", () => {
         modal?.classList.add("hidden");
         resetForm();
@@ -66,7 +60,6 @@ document.addEventListener("DOMContentLoaded", () => {
         resetForm();
     });
 
-    // 프로젝트 경로 선택
     selectProjectPathBtn?.addEventListener("click", async () => {
         try {
             const path = await window.electronAPI.selectFolder("프로젝트 폴더 선택");
@@ -76,7 +69,6 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     });
 
-    // Datapack 경로 선택
     selectDatapackPathBtn?.addEventListener("click", async () => {
         try {
             const path = await window.electronAPI.selectFolder("Datapack 폴더 선택");
@@ -92,7 +84,6 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     });
 
-    // Resourcepack 경로 선택
     selectResourcepackPathBtn?.addEventListener("click", async () => {
         try {
             const path = await window.electronAPI.selectFolder("Resourcepack 폴더 선택");
@@ -108,7 +99,6 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     });
 
-    // 프로젝트 생성
     createProjectBtn?.addEventListener("click", async () => {
         if (!projectPath) {
             alert("프로젝트 경로를 선택해주세요.");
@@ -122,7 +112,6 @@ document.addEventListener("DOMContentLoaded", () => {
         let finalDatapackPath: string;
         let finalResourcepackPath: string;
 
-        // 프로젝트 경로 내에 폴더 생성
         finalDatapackPath = datapackPath ? datapackPath : `${projectPath}/saltengine_dp`;
         finalResourcepackPath = resourcepackPath ? resourcepackPath : `${projectPath}/saltengine_rp`;
 
@@ -144,7 +133,6 @@ document.addEventListener("DOMContentLoaded", () => {
             minecraftVersion,
         });
 
-        // 프로젝트 폴더 생성
         try {
             await window.electronAPI.createFolder(projectPath);
         } catch (error) {
@@ -153,7 +141,6 @@ document.addEventListener("DOMContentLoaded", () => {
             return;
         }
 
-        // 프로젝트 파일 자동 저장
         try {
             await saveProject(project);
             console.log(`프로젝트 파일이 생성되었습니다: ${projectPath}/${projectName}.salt.json`);
@@ -166,7 +153,6 @@ document.addEventListener("DOMContentLoaded", () => {
         await switchToEditor(project);
     });
 
-    // 설정 버튼
     settingsBtn?.addEventListener("click", () => {
         window.electronAPI.openSettings?.();
     });
@@ -180,23 +166,17 @@ function setProjectPath(path: string): string {
     return (projectPath = path);
 }
 
-/**
- * 폴더에서 프로젝트를 로드합니다.
- */
 async function loadProjectFromFolder(folderPath: string): Promise<void> {
     try {
-        // 폴더 내에서 .salt.json 파일 찾기
         const projectFiles = await window.electronAPI.findProjectFiles(folderPath);
         if (!projectFiles || projectFiles.length === 0) {
             alert("프로젝트 파일(.salt.json)을 찾을 수 없습니다.");
             return;
         }
 
-        // 첫 번째 프로젝트 파일 로드
         const projectFilePath = projectFiles[0];
         const data = await window.electronAPI.readProjectFile(projectFilePath);
 
-        // scenes 폴더에서 Scene 파일들 로드
         const scenesFolder = `${folderPath}/scenes`;
         const sceneFiles = await window.electronAPI.readDir(scenesFolder);
         const scenes: Scene[] = [];
@@ -228,9 +208,6 @@ async function loadProjectFromFolder(folderPath: string): Promise<void> {
     }
 }
 
-/**
- * 에디터 뷰로 전환합니다.
- */
 async function switchToEditor(project: Project): Promise<void> {
     try {
         await window.electronAPI.switchToEditor(project);
@@ -240,9 +217,6 @@ async function switchToEditor(project: Project): Promise<void> {
     }
 }
 
-/**
- * 폼을 초기화합니다.
- */
 function resetForm(): void {
     projectPath = null;
     datapackPath = null;

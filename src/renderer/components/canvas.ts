@@ -4,9 +4,6 @@ import { GameObjectType, MeshType } from "../../types/gameObject.js";
 import { getActiveScene, getCurrentProject } from "../editor.js";
 import * as THREE from "three";
 
-/**
- * three.js 기반 캔버스 렌더러 및 상호작용 관리 클래스
- */
 export class CanvasRenderer {
     private container: HTMLElement;
     private renderer: THREE.WebGLRenderer;
@@ -39,7 +36,6 @@ export class CanvasRenderer {
     constructor(canvas: HTMLCanvasElement) {
         this.container = canvas.parentElement!;
 
-        // three.js 초기화
         this.renderer = new THREE.WebGLRenderer({
             canvas,
             antialias: true,
@@ -49,10 +45,8 @@ export class CanvasRenderer {
         this.renderer.setClearColor(0x1e1e1e, 1);
         this.renderer.outputColorSpace = THREE.SRGBColorSpace;
 
-        // Scene 생성
         this.scene = new THREE.Scene();
 
-        // Camera 생성 (Perspective for 3D)
         const aspect = canvas.width / canvas.height;
         this.camera = new THREE.PerspectiveCamera(this.fov, aspect, 0.1, 10000);
         this.camera.position.set(0, 0, this.cameraDistance);
@@ -63,13 +57,10 @@ export class CanvasRenderer {
             this.aspectRatio = project.aspectRatio;
         }
 
-        // 그리드 생성
         this.createGrid();
 
-        // 작업 영역 테두리 생성
         this.createWorkspaceBorder();
 
-        // 조명 추가 (3D 메쉬를 위한)
         this.setupLights();
 
         this.setupEventListeners();
@@ -79,9 +70,7 @@ export class CanvasRenderer {
         this.animate();
     }
 
-    /**
-     * 애니메이션 루프
-     */
+    
     private animate(): void {
         requestAnimationFrame(() => this.animate());
         this.renderer.render(this.scene, this.camera);
@@ -98,7 +87,6 @@ export class CanvasRenderer {
         const gridExtent = 2000; // 그리드 범위 (-2000 ~ 2000)
         const gridColor = 0x333333; // 그리드 색상
 
-        // 수평선 (Y축 방향)
         for (let x = -gridExtent; x <= gridExtent; x += gridSize) {
             const points = [new THREE.Vector3(x, -gridExtent, -0.1), new THREE.Vector3(x, gridExtent, -0.1)];
             const geometry = new THREE.BufferGeometry().setFromPoints(points);
@@ -111,7 +99,6 @@ export class CanvasRenderer {
             this.gridHelper.add(line);
         }
 
-        // 수직선 (X축 방향)
         for (let y = -gridExtent; y <= gridExtent; y += gridSize) {
             const points = [new THREE.Vector3(-gridExtent, y, -0.1), new THREE.Vector3(gridExtent, y, -0.1)];
             const geometry = new THREE.BufferGeometry().setFromPoints(points);
@@ -127,9 +114,7 @@ export class CanvasRenderer {
         this.scene.add(this.gridHelper);
     }
 
-    /**
-     * 작업 영역 테두리를 생성합니다.
-     */
+    
     private createWorkspaceBorder(): void {
         if (this.workspaceBorder) {
             this.scene.remove(this.workspaceBorder);
@@ -139,7 +124,6 @@ export class CanvasRenderer {
         const width = this.workspaceBounds.width;
         const height = this.workspaceBounds.height;
 
-        // 작업 영역 테두리 좌표
         const halfWidth = width / 2;
         const halfHeight = height / 2;
 
@@ -161,28 +145,22 @@ export class CanvasRenderer {
         this.scene.add(this.workspaceBorder);
     }
 
-    /**
-     * 3D 메쉬를 위한 조명을 설정합니다.
-     */
+    
     private setupLights(): void {
-        // Ambient Light (전체 조명)
+
         const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
         this.scene.add(ambientLight);
 
-        // Directional Light (방향성 조명)
         const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
         directionalLight.position.set(5, 5, 5);
         this.scene.add(directionalLight);
 
-        // Point Light (포인트 조명)
         const pointLight = new THREE.PointLight(0xffffff, 0.3);
         pointLight.position.set(-5, 5, 5);
         this.scene.add(pointLight);
     }
 
-    /**
-     * 캔버스 크기를 조정합니다.
-     */
+    
     resize(): void {
         const rect = this.container.getBoundingClientRect();
         const width = rect.width;
@@ -190,42 +168,33 @@ export class CanvasRenderer {
 
         this.renderer.setSize(width, height);
 
-        // 카메라 업데이트 (Perspective Camera)
         const aspect = width / height;
         this.camera.aspect = aspect;
         this.camera.updateProjectionMatrix();
 
-        // 화면 비율에 맞게 작업 공간 크기 설정
         this.setupWorkspace();
 
-        // 작업 영역이 화면에 맞도록 자동 조정
         this.fitWorkspaceToView();
 
         this.render();
     }
 
-    /**
-     * 화면 비율에 맞게 작업 공간을 설정합니다.
-     */
+    
     private setupWorkspace(): void {
         const [widthRatio, heightRatio] = this.aspectRatio.split(":").map(Number) as [number, number];
 
-        // 작업 영역 크기 계산 (FHD 비율 기준)
         this.workspaceBounds = {
             width: 1920,
             height: 1080,
         };
 
-        // 작업 공간을 중앙에 배치
         this.cameraOffset = {
             x: 0,
             y: 0,
         };
     }
 
-    /**
-     * 작업 영역이 화면에 전부 보이도록 확대/축소 배율을 자동으로 조정합니다.
-     */
+    
     public fitWorkspaceToView(): void {
         const rect = this.container.getBoundingClientRect();
         const canvasWidth = rect.width;
@@ -233,30 +202,23 @@ export class CanvasRenderer {
 
         if (canvasWidth === 0 || canvasHeight === 0) return;
 
-        // 작업 영역 크기
         const workspaceWidth = this.workspaceBounds.width;
         const workspaceHeight = this.workspaceBounds.height;
 
-        // Perspective 카메라에서 특정 거리에서 보이는 화면 크기 계산
         const distance = this.cameraDistance;
         const fovRad = (this.fov * Math.PI) / 180;
         const visibleHeight = 2 * Math.tan(fovRad / 2) * distance;
         const visibleWidth = visibleHeight * this.camera.aspect;
 
-        // 작업 영역이 화면에 맞도록 스케일 계산 (여백 10% 추가)
         const scaleX = visibleWidth / (workspaceWidth * 1.1);
         const scaleY = visibleHeight / (workspaceHeight * 1.1);
 
-        // 둘 중 작은 스케일 사용 (작업 영역이 완전히 보이도록)
         this.scale = Math.min(scaleX, scaleY);
 
-        // 스케일 범위 제한
         this.scale = Math.max(0.1, Math.min(5.0, this.scale));
     }
 
-    /**
-     * 씬을 렌더링합니다.
-     */
+    
     render(): void {
         const scene = getActiveScene();
         if (!scene) {
@@ -266,12 +228,10 @@ export class CanvasRenderer {
 
         this.clearScene();
 
-        // 카메라 변환 적용
         this.camera.position.set(this.cameraOffset.x, this.cameraOffset.y, this.cameraDistance / this.scale);
         this.camera.lookAt(this.cameraOffset.x, this.cameraOffset.y, 0);
         this.camera.updateProjectionMatrix();
 
-        // 오브젝트 렌더링 (layer 순서대로)
         const sortedObjects = [...scene.gameObjects].sort((a, b) => {
             const layerA = a.layer ?? 0;
             const layerB = b.layer ?? 0;
@@ -279,7 +239,7 @@ export class CanvasRenderer {
         });
 
         for (const obj of sortedObjects) {
-            // Layer가 visible인지 확인
+
             const objLayer = obj.layer ?? 0;
             const layer = scene.layers?.find((l) => l.id === objLayer);
             if (layer && !layer.visible) {
@@ -288,20 +248,16 @@ export class CanvasRenderer {
             this.renderObject(obj);
         }
 
-        // 선택 박스 렌더링
         if (this.isSelecting) {
             this.renderSelectionBox();
         }
 
-        // 스냅 기준선 렌더링
         this.renderSnapLines();
     }
 
-    /**
-     * Scene을 지웁니다.
-     */
+    
     private clearScene(): void {
-        // 그리드, 작업 영역 테두리, 조명을 제외하고 모든 오브젝트 제거
+
         const objectsToRemove = this.scene.children.filter(
             (child) => child !== this.gridHelper && child !== this.workspaceBorder && !(child instanceof THREE.Light)
         );
@@ -311,16 +267,13 @@ export class CanvasRenderer {
         this.meshMap.clear();
     }
 
-    /**
-     * 개별 오브젝트를 렌더링합니다.
-     */
+    
     private renderObject(obj: GameObject): void {
         const group = new THREE.Group();
         group.position.set(obj.position.x, obj.position.y, 0);
         group.rotation.z = (obj.rotation * Math.PI) / 180;
         group.scale.set(obj.scale.x, obj.scale.y, 1);
 
-        // 타입별 렌더링
         switch (obj.type) {
             case GameObjectType.ASSET:
                 this.renderAssetSync(obj as AssetObject, group);
@@ -333,7 +286,6 @@ export class CanvasRenderer {
                 break;
         }
 
-        // 선택된 오브젝트 표시
         if (this.selectedObjects.has(obj)) {
             this.renderSelection(obj, group);
         }
@@ -342,14 +294,11 @@ export class CanvasRenderer {
         this.meshMap.set(obj.id, group);
     }
 
-    /**
-     * Asset 오브젝트를 동기적으로 렌더링합니다.
-     */
+    
     private renderAssetSync(obj: AssetObject, group: THREE.Group): void {
         const assetPath = obj.properties?.assetPath;
         const project = getCurrentProject();
 
-        // group에 이미 scale이 적용되어 있으므로 원본 크기를 사용
         const bounds = this.getObjectBounds(obj, false);
 
         if (assetPath && project) {
@@ -366,14 +315,13 @@ export class CanvasRenderer {
                 group.add(mesh);
                 return;
             } else if (cachedTexture === undefined) {
-                // 이미지 로드 시작 (비동기)
+
                 this.loadImage(fullPath).then(() => {
                     this.render();
                 });
             }
         }
 
-        // 이미지가 없으면 기본 아이콘 표시
         const geometry = new THREE.PlaneGeometry(bounds.width, bounds.height);
         const material = new THREE.MeshBasicMaterial({
             color: 0x4a5568,
@@ -382,7 +330,6 @@ export class CanvasRenderer {
         });
         const mesh = new THREE.Mesh(geometry, material);
 
-        // 테두리 추가
         const edges = new THREE.EdgesGeometry(geometry);
         const line = new THREE.LineSegments(edges, new THREE.LineBasicMaterial({ color: 0x718096 }));
 
@@ -390,9 +337,7 @@ export class CanvasRenderer {
         group.add(line);
     }
 
-    /**
-     * 이미지를 로드합니다.
-     */
+    
     private async loadImage(path: string): Promise<THREE.Texture | null> {
         if (this.imageCache.has(path)) {
             return this.imageCache.get(path) ?? null;
@@ -407,12 +352,12 @@ export class CanvasRenderer {
                 loader.load(
                     base64,
                     (texture) => {
-                        // 색상 공간을 sRGB로 설정하여 올바른 색상 표시
+
                         texture.colorSpace = THREE.SRGBColorSpace;
-                        // 텍스처 필터링 설정 (선명도 향상)
+
                         texture.minFilter = THREE.LinearFilter;
                         texture.magFilter = THREE.LinearFilter;
-                        // 텍스처 업데이트
+
                         texture.needsUpdate = true;
                         this.imageCache.set(path, texture);
                         resolve(texture);
@@ -429,38 +374,31 @@ export class CanvasRenderer {
         }
     }
 
-    /**
-     * TextDisplay 오브젝트를 렌더링합니다.
-     */
+    
     private renderTextDisplay(obj: GameObject, group: THREE.Group): void {
         const textObj = obj as any;
         const text = textObj.properties?.text ?? "Text";
         const backgroundColor = textObj.properties?.backgroundColor ?? "#2d3748";
         const textColor = textObj.properties?.textColor ?? "#ffffff";
 
-        // 배경 박스
         const canvas = document.createElement("canvas");
         const ctx = canvas.getContext("2d")!;
         canvas.width = 256;
         canvas.height = 128;
 
-        // 배경 그리기
         ctx.fillStyle = backgroundColor;
         ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-        // 텍스트 그리기
         ctx.fillStyle = textColor;
         ctx.font = "24px Arial";
         ctx.textAlign = "center";
         ctx.textBaseline = "middle";
         ctx.fillText(text, canvas.width / 2, canvas.height / 2);
 
-        // 텍스처 생성
         const texture = new THREE.CanvasTexture(canvas);
         texture.colorSpace = THREE.SRGBColorSpace;
         texture.needsUpdate = true;
 
-        // group에 이미 scale이 적용되어 있으므로 원본 크기를 사용
         const bounds = this.getObjectBounds(obj, false);
         const geometry = new THREE.PlaneGeometry(bounds.width, bounds.height);
         const material = new THREE.MeshBasicMaterial({
@@ -472,9 +410,7 @@ export class CanvasRenderer {
         group.add(mesh);
     }
 
-    /**
-     * 3D 메쉬 오브젝트를 렌더링합니다.
-     */
+    
     private render3DMesh(obj: Mesh3DObject, group: THREE.Group): void {
         const {
             meshType,
@@ -487,8 +423,6 @@ export class CanvasRenderer {
             segments = 32,
         } = obj.properties;
 
-        // group에 이미 scale이 적용되어 있지만, 3D mesh는 properties의 원본 크기를 그대로 사용
-        // (getObjectBounds와 동일한 값)
         let geometry: THREE.BufferGeometry;
 
         switch (meshType) {
@@ -525,10 +459,7 @@ export class CanvasRenderer {
         group.add(mesh);
     }
 
-    /**
-     * 오브젝트의 실제 크기를 계산합니다.
-     * @param applyScale - 스케일을 적용할지 여부 (기본값: true)
-     */
+    
     private getObjectBounds(obj: GameObject, applyScale: boolean = true): { width: number; height: number } {
         let baseWidth: number;
         let baseHeight: number;
@@ -566,18 +497,13 @@ export class CanvasRenderer {
         }
     }
 
-    /**
-     * 선택된 오브젝트의 바운딩 박스와 크기 조절 핸들을 렌더링합니다.
-     * @param obj - 렌더링할 게임 오브젝트
-     * @param group - 오브젝트의 THREE.Group (이미 스케일이 적용됨)
-     */
+    
     private renderSelection(obj: GameObject, group: THREE.Group): void {
-        // group에 이미 scale이 적용되어 있으므로 원본 크기를 사용
+
         const bounds = this.getObjectBounds(obj, false);
         const halfWidth = bounds.width / 2;
         const halfHeight = bounds.height / 2;
 
-        // 선택 박스
         const points = [
             new THREE.Vector3(-halfWidth, -halfHeight, 0.1),
             new THREE.Vector3(halfWidth, -halfHeight, 0.1),
@@ -591,13 +517,9 @@ export class CanvasRenderer {
         const line = new THREE.Line(geometry, material);
         group.add(line);
 
-        // 핸들은 보이지 않지만 감지를 위해 존재 (투명)
-        // 핸들 렌더링을 제거하여 시각적으로 표시하지 않음
     }
 
-    /**
-     * 선택 박스를 렌더링합니다.
-     */
+    
     private renderSelectionBox(): void {
         const rect = this.container.getBoundingClientRect();
         const startWorld = this.screenToWorld(this.selectionStart.x - rect.left, this.selectionStart.y - rect.top);
@@ -608,7 +530,6 @@ export class CanvasRenderer {
         const centerX = startWorld.x + width / 2;
         const centerY = startWorld.y + height / 2;
 
-        // 테두리만 렌더링 (배경은 투명)
         const geometry = new THREE.PlaneGeometry(Math.abs(width), Math.abs(height));
         const edges = new THREE.EdgesGeometry(geometry);
         const line = new THREE.LineSegments(edges, new THREE.LineBasicMaterial({ color: 0x007acc }));
@@ -617,13 +538,10 @@ export class CanvasRenderer {
         this.scene.add(line);
     }
 
-    /**
-     * 스냅 기준선을 렌더링합니다.
-     */
+    
     private renderSnapLines(): void {
         if (!this.snapLines.x && !this.snapLines.y) return;
 
-        // Perspective 카메라의 가시 영역 계산
         const distance = this.cameraDistance / this.scale;
         const fovRad = (this.fov * Math.PI) / 180;
         const frustumHeight = 2 * Math.tan(fovRad / 2) * distance;
@@ -662,18 +580,14 @@ export class CanvasRenderer {
         }
     }
 
-    /**
-     * 스크린 좌표를 월드 좌표로 변환합니다. (Z=0 평면에 투영)
-     */
+    
     private screenToWorld(screenX: number, screenY: number): Vector2 {
         const rect = this.container.getBoundingClientRect();
         const x = (screenX / rect.width) * 2 - 1;
         const y = -(screenY / rect.height) * 2 + 1;
 
-        // Raycaster를 사용하여 Z=0 평면과의 교차점 계산
         this.raycaster.setFromCamera(new THREE.Vector2(x, y), this.camera);
 
-        // Z=0 평면
         const plane = new THREE.Plane(new THREE.Vector3(0, 0, 1), 0);
         const intersectionPoint = new THREE.Vector3();
         this.raycaster.ray.intersectPlane(plane, intersectionPoint);
@@ -681,9 +595,7 @@ export class CanvasRenderer {
         return { x: intersectionPoint.x, y: intersectionPoint.y };
     }
 
-    /**
-     * 이벤트 리스너를 설정합니다.
-     */
+    
     private setupEventListeners(): void {
         this.renderer.domElement.addEventListener("mousedown", (e: MouseEvent) => this.onMouseDown(e));
         this.renderer.domElement.addEventListener("mousemove", (e: MouseEvent) => this.onMouseMove(e));
@@ -694,10 +606,7 @@ export class CanvasRenderer {
         window.addEventListener("keydown", (e: KeyboardEvent) => this.onKeyDown(e));
     }
 
-    /**
-     * 마우스 다운 이벤트 처리
-     * 오브젝트 선택, 크기 조절, 드래그, 카메라 이동을 처리합니다.
-     */
+    
     private onMouseDown(e: MouseEvent): void {
         e.preventDefault();
         const rect = this.container.getBoundingClientRect();
@@ -706,7 +615,6 @@ export class CanvasRenderer {
         const scene = getActiveScene();
         if (!scene) return;
 
-        // 우클릭: 카메라 이동
         if (e.button === 2) {
             this.isPanning = true;
             this.dragStart = { x: e.clientX, y: e.clientY };
@@ -714,20 +622,18 @@ export class CanvasRenderer {
             return;
         }
 
-        // 좌클릭: 오브젝트 선택, 크기 조절, 드래그
         if (e.button === 0) {
-            // 크기 조절 핸들 확인 (선택된 오브젝트가 하나일 때만)
+
             if (this.selectedObjects.size === 1) {
                 const obj = Array.from(this.selectedObjects)[0];
                 if (obj) {
                     const handleIndex = this.getHandleAt(worldPos.x, worldPos.y, obj);
                     if (handleIndex >= 0) {
-                        // 크기 조절 모드 시작
+
                         this.isResizing = true;
                         this.resizeHandle = handleIndex;
                         this.dragStart = { x: worldPos.x, y: worldPos.y };
 
-                        // 초기 상태 저장 (크기 조절 중 참조용)
                         const initialScale = { x: obj.scale.x, y: obj.scale.y };
                         const initialPosition = { x: obj.position.x, y: obj.position.y };
                         (this as any).initialScale = initialScale;
@@ -737,7 +643,6 @@ export class CanvasRenderer {
                 }
             }
 
-            // 오브젝트 선택 검사
             let found: GameObject | null = null;
             for (let i = scene.gameObjects.length - 1; i >= 0; i--) {
                 const obj = scene.gameObjects[i];
@@ -761,7 +666,7 @@ export class CanvasRenderer {
                 if (!e.shiftKey) {
                     this.selectedObjects.clear();
                 }
-                // 다중 선택 시작
+
                 this.isSelecting = true;
                 this.selectionStart = { x: e.clientX, y: e.clientY };
                 this.dragStart = { x: e.clientX, y: e.clientY };
@@ -772,19 +677,15 @@ export class CanvasRenderer {
         }
     }
 
-    /**
-     * 마우스 이동 이벤트 처리
-     * 크기 조절, 드래그, 다중 선택 등을 처리합니다.
-     */
+    
     private onMouseMove(e: MouseEvent): void {
         const rect = this.container.getBoundingClientRect();
         const worldPos = this.screenToWorld(e.clientX - rect.left, e.clientY - rect.top);
 
-        // 크기 조절 중
         if (this.isResizing && this.selectedObjects.size === 1) {
             const obj = Array.from(this.selectedObjects)[0];
             if (obj) {
-                // 1. 초기 상태 가져오기
+
                 const initialPosition = (this as any).initialPosition as Vector2;
                 const initialScale = (this as any).initialScale as Vector2;
                 const baseBounds = this.getObjectBounds(obj, false); // 스케일 미적용 원본 크기
@@ -800,7 +701,6 @@ export class CanvasRenderer {
                 const initialWidth = initialProps.width * initialProps.scale.x;
                 const initialHeight = initialProps.height * initialProps.scale.y;
 
-                // 2. 로컬 좌표계 및 앵커 포인트 설정
                 const halfW = initialWidth / 2;
                 const halfH = initialHeight / 2;
 
@@ -815,12 +715,10 @@ export class CanvasRenderer {
                     { x: -halfW, y: 0 }, // 7: L (Left)
                 ];
 
-                // Alt 키를 누르면 중심 기준으로 확대, 아니면 반대편 핸들이 고정점(Pivot)이 됨
                 const anchorLocal = e.altKey
                     ? { x: 0, y: 0 } // 중심점
                     : handles[{ 0: 2, 1: 3, 2: 0, 3: 1, 4: 6, 5: 7, 6: 4, 7: 5 }[this.resizeHandle]!]!;
 
-                // 3. 마우스 위치를 오브젝트의 로컬 좌표계로 변환
                 const angle = (initialProps.rotation * Math.PI) / 180;
                 const cos = Math.cos(angle);
                 const sin = Math.sin(angle);
@@ -834,15 +732,13 @@ export class CanvasRenderer {
                     y: mouseVec.x * sinNeg + mouseVec.y * cosNeg,
                 };
 
-                // 4. 로컬 좌표계에서 새로운 너비와 높이 계산
                 let newWidthLocal: number;
                 let newHeightLocal: number;
 
                 if (e.altKey) {
-                    // Alt 키: 중심 기준 확대 (양방향으로 동시에 확대)
+
                     const currentHandle = handles[this.resizeHandle]!;
 
-                    // 마우스가 중심으로부터 얼마나 떨어졌는지 계산
                     const deltaFromCenter = {
                         x: mouseRotated.x,
                         y: mouseRotated.y,
@@ -851,36 +747,35 @@ export class CanvasRenderer {
                     const handleType = this.getHandleType(this.resizeHandle);
 
                     if (handleType === "corner") {
-                        // 모서리: 양쪽 방향으로 확대
+
                         newWidthLocal = Math.abs(deltaFromCenter.x) * 2;
                         newHeightLocal = Math.abs(deltaFromCenter.y) * 2;
                     } else if (handleType === "horizontal") {
-                        // 좌우 핸들: 너비만 변경
+
                         newWidthLocal = Math.abs(deltaFromCenter.x) * 2;
                         newHeightLocal = initialHeight;
                     } else {
-                        // 상하 핸들: 높이만 변경
+
                         newWidthLocal = initialWidth;
                         newHeightLocal = Math.abs(deltaFromCenter.y) * 2;
                     }
                 } else {
-                    // 일반 모드: 고정점 기준 크기 조절
+
                     newWidthLocal = mouseRotated.x - anchorLocal.x;
                     newHeightLocal = mouseRotated.y - anchorLocal.y;
 
                     const handleType = this.getHandleType(this.resizeHandle);
 
                     if (handleType === "horizontal") {
-                        // 좌우 핸들: 높이는 변하지 않음
+
                         newHeightLocal = initialHeight;
                     }
                     if (handleType === "vertical") {
-                        // 상하 핸들: 너비는 변하지 않음
+
                         newWidthLocal = initialWidth;
                     }
                 }
 
-                // 5. Shift 키 누를 시 비율 유지
                 const handleType = this.getHandleType(this.resizeHandle);
                 if (handleType === "corner" && e.shiftKey) {
                     const aspectRatio = initialWidth / initialHeight;
@@ -892,39 +787,34 @@ export class CanvasRenderer {
                     }
                 }
 
-                // 6. 최소 크기 제한 및 음수 크기 방지
                 const minSize = 5; // 최소 픽셀 크기
                 const absWidth = Math.max(minSize, Math.abs(newWidthLocal));
                 const absHeight = Math.max(minSize, Math.abs(newHeightLocal));
 
-                // 7. 새로운 스케일 계산
                 obj.scale.x = absWidth / initialProps.width;
                 obj.scale.y = absHeight / initialProps.height;
 
-                // 8. 새로운 중심점 위치 계산
-                // Alt 키 모드: 중심점이 고정되므로 위치 변경 없음
-                // 일반 모드: 앵커 포인트를 기준으로 새로운 중심점 계산
                 if (e.altKey) {
-                    // 중심 기준 확대: 위치 변경 없음
+
                     obj.position.x = initialProps.position.x;
                     obj.position.y = initialProps.position.y;
                 } else {
-                    // 일반 모드: 고정점 기준 크기 조절
+
                     let newCenterLocalX: number;
                     let newCenterLocalY: number;
 
                     if (handleType === "horizontal") {
-                        // 좌우 핸들: 너비만 변하고 y좌표는 중심(0) 유지
+
                         const signWidth = newWidthLocal >= 0 ? 1 : -1;
                         newCenterLocalX = anchorLocal.x + (absWidth * signWidth) / 2;
                         newCenterLocalY = 0;
                     } else if (handleType === "vertical") {
-                        // 상하 핸들: 높이만 변하고 x좌표는 중심(0) 유지
+
                         const signHeight = newHeightLocal >= 0 ? 1 : -1;
                         newCenterLocalX = 0;
                         newCenterLocalY = anchorLocal.y + (absHeight * signHeight) / 2;
                     } else {
-                        // 모서리 핸들: 너비와 높이 모두 변함
+
                         const signWidth = newWidthLocal >= 0 ? 1 : -1;
                         const signHeight = newHeightLocal >= 0 ? 1 : -1;
                         newCenterLocalX = anchorLocal.x + (absWidth * signWidth) / 2;
@@ -946,13 +836,12 @@ export class CanvasRenderer {
             }
         }
 
-        // 카메라 이동 중
         if (this.isPanning) {
             const deltaX = e.clientX - this.dragStart.x;
             const deltaY = e.clientY - this.dragStart.y;
 
             const rect = this.container.getBoundingClientRect();
-            // Perspective 카메라에서 화면 이동 거리를 월드 좌표로 변환
+
             const distance = this.cameraDistance / this.scale;
             const fovRad = (this.fov * Math.PI) / 180;
             const height = 2 * Math.tan(fovRad / 2) * distance;
@@ -969,14 +858,12 @@ export class CanvasRenderer {
             return;
         }
 
-        // 다중 선택 중
         if (this.isSelecting) {
             this.dragStart = { x: e.clientX, y: e.clientY };
             this.render();
             return;
         }
 
-        // 드래그 중
         if (this.isDragging && this.selectedObjects.size > 0) {
             const scene = getActiveScene();
             if (!scene) return;
@@ -1005,7 +892,7 @@ export class CanvasRenderer {
             this.onSelectionChanged();
             this.render();
         } else {
-            // 커서 변경 (핸들 호버)
+
             if (this.selectedObjects.size === 1) {
                 const obj = Array.from(this.selectedObjects)[0];
                 if (obj) {
@@ -1013,8 +900,7 @@ export class CanvasRenderer {
                     if (handleIndex >= 0) {
                         const handleType = this.getHandleType(handleIndex);
                         if (handleType === "corner") {
-                            // 0: 좌하단, 2: 우상단 → nesw-resize (↗↙)
-                            // 1: 우하단, 3: 좌상단 → nwse-resize (↖↘)
+
                             if (handleIndex === 0 || handleIndex === 2) {
                                 this.renderer.domElement.style.cursor = "nesw-resize";
                             } else {
@@ -1033,22 +919,13 @@ export class CanvasRenderer {
         }
     }
 
-    /**
-     * 특정 월드 좌표에서 오브젝트의 크기 조절 핸들을 감지합니다.
-     * @param x - 월드 좌표 X
-     * @param y - 월드 좌표 Y
-     * @param obj - 대상 게임 오브젝트
-     * @returns 핸들 인덱스 (0-7) 또는 -1 (핸들 없음)
-     *          0: 좌하단, 1: 우하단, 2: 우상단, 3: 좌상단
-     *          4: 하단, 5: 우측, 6: 상단, 7: 좌측
-     */
+    
     private getHandleAt(x: number, y: number, obj: GameObject): number {
         const bounds = this.getObjectBounds(obj);
         const halfWidth = bounds.width / 2;
         const halfHeight = bounds.height / 2;
         const handleSize = 12 / this.scale;
 
-        // 월드 좌표를 오브젝트의 로컬 좌표계로 변환
         const dx = x - obj.position.x;
         const dy = y - obj.position.y;
 
@@ -1056,7 +933,6 @@ export class CanvasRenderer {
         const localX = dx * Math.cos(angle) - dy * Math.sin(angle);
         const localY = dx * Math.sin(angle) + dy * Math.cos(angle);
 
-        // 모서리 핸들 (정사각형 영역)
         const cornerHandles = [
             { x: -halfWidth, y: -halfHeight, index: 0 }, // 좌하단
             { x: halfWidth, y: -halfHeight, index: 1 }, // 우하단
@@ -1072,7 +948,6 @@ export class CanvasRenderer {
             }
         }
 
-        // 엣지 핸들 (직사각형 영역)
         const edgeHandles = [
             { x: 0, y: -halfHeight, index: 4, type: "vertical" }, // 하단
             { x: halfWidth, y: 0, index: 5, type: "horizontal" }, // 우측
@@ -1084,13 +959,12 @@ export class CanvasRenderer {
             const hdx = localX - handle.x;
             const hdy = localY - handle.y;
 
-            // 수평 핸들은 세로로 좁고 가로로 넓음
             if (handle.type === "horizontal") {
                 if (Math.abs(hdx) < handleSize && Math.abs(hdy) < halfHeight) {
                     return handle.index;
                 }
             }
-            // 수직 핸들은 가로로 좁고 세로로 넓음
+
             else if (handle.type === "vertical") {
                 if (Math.abs(hdx) < halfWidth && Math.abs(hdy) < handleSize) {
                     return handle.index;
@@ -1101,14 +975,7 @@ export class CanvasRenderer {
         return -1;
     }
 
-    /**
-     * 핸들 인덱스에 따라 핸들 타입을 반환합니다.
-     * @param handleIndex - 핸들 인덱스 (0-7)
-     * @returns 핸들 타입
-     *          - "corner": 모서리 핸들 (0-3), 너비와 높이 모두 조절
-     *          - "horizontal": 좌우 핸들 (5, 7), 너비만 조절
-     *          - "vertical": 상하 핸들 (4, 6), 높이만 조절
-     */
+    
     private getHandleType(handleIndex: number): "corner" | "horizontal" | "vertical" {
         if (handleIndex >= 0 && handleIndex <= 3) {
             return "corner";
@@ -1120,9 +987,7 @@ export class CanvasRenderer {
         return "corner";
     }
 
-    /**
-     * 그리드 및 다른 오브젝트에 스냅합니다.
-     */
+    
     private snapToGridAndObjects(
         x: number,
         y: number,
@@ -1174,9 +1039,7 @@ export class CanvasRenderer {
         return result;
     }
 
-    /**
-     * 마우스 업 이벤트 처리
-     */
+    
     private onMouseUp(): void {
         if (this.isSelecting) {
             const rect = this.container.getBoundingClientRect();
@@ -1220,9 +1083,7 @@ export class CanvasRenderer {
         this.render();
     }
 
-    /**
-     * 휠 이벤트 처리 (줌)
-     */
+    
     private onWheel(e: WheelEvent): void {
         e.preventDefault();
 
@@ -1233,9 +1094,7 @@ export class CanvasRenderer {
         this.render();
     }
 
-    /**
-     * 키보드 이벤트 처리
-     */
+    
     private onKeyDown(e: KeyboardEvent): void {
         if ((e.key === "Delete" || e.key === "Backspace") && this.selectedObjects.size > 0) {
             e.preventDefault();
@@ -1243,9 +1102,7 @@ export class CanvasRenderer {
         }
     }
 
-    /**
-     * 선택된 오브젝트를 삭제합니다.
-     */
+    
     deleteSelectedObjects(): void {
         const scene = getActiveScene();
         if (!scene) return;
@@ -1265,9 +1122,7 @@ export class CanvasRenderer {
         window.dispatchEvent(event);
     }
 
-    /**
-     * 점이 오브젝트 내부에 있는지 확인
-     */
+    
     private isPointInObject(x: number, y: number, obj: GameObject): boolean {
         const bounds = this.getObjectBounds(obj);
         const halfWidth = bounds.width / 2;
@@ -1283,9 +1138,7 @@ export class CanvasRenderer {
         return Math.abs(rotatedX) <= halfWidth && Math.abs(rotatedY) <= halfHeight;
     }
 
-    /**
-     * 선택 변경 콜백 (속성 패널에서 사용)
-     */
+    
     private onSelectionChanged(): void {
         const selectedArray = Array.from(this.selectedObjects);
         const selectedObj: GameObject | null = selectedArray.length === 1 && selectedArray[0] ? selectedArray[0] : null;
@@ -1295,24 +1148,18 @@ export class CanvasRenderer {
         window.dispatchEvent(event);
     }
 
-    /**
-     * 외부에서 렌더링을 강제로 업데이트합니다.
-     */
+    
     forceRender(): void {
         this.render();
     }
 
-    /**
-     * 선택된 오브젝트를 반환합니다.
-     */
+    
     getSelectedObject(): GameObject | null {
         const selectedArray = Array.from(this.selectedObjects);
         return selectedArray.length === 1 && selectedArray[0] ? selectedArray[0] : null;
     }
 
-    /**
-     * 선택된 오브젝트들을 반환합니다.
-     */
+    
     getSelectedObjects(): GameObject[] {
         return Array.from(this.selectedObjects);
     }

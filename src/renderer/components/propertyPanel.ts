@@ -3,9 +3,6 @@ import { GameObjectType } from "../../types/gameObject.js";
 import type { AssetProperties, TextDisplayProperties } from "../../types/gameObject.js";
 import { t } from "../../util/i18n.js";
 
-/**
- * 속성 패널 컴포넌트
- */
 export class PropertyPanel {
     private container: HTMLElement;
     private contentContainer: HTMLElement;
@@ -20,13 +17,9 @@ export class PropertyPanel {
         this.setupEventListeners();
     }
 
-    /**
-     * 오브젝트 속성을 표시합니다.
-     */
     showObjectProperties(obj: GameObject): void {
         this.contentContainer.innerHTML = "";
 
-        // 삭제 버튼
         const deleteButton = document.createElement("button");
         deleteButton.textContent = "삭제";
         deleteButton.className = "delete-button";
@@ -44,7 +37,6 @@ export class PropertyPanel {
         });
         this.contentContainer.appendChild(deleteButton);
 
-        // 기본 속성
         this.addPropertyGroup("Transform", () => {
             this.addNumberInput("X", obj.position.x, (value) => {
                 obj.position.x = value;
@@ -68,7 +60,6 @@ export class PropertyPanel {
             });
         });
 
-        // 타입별 속성
         switch (obj.type) {
             case GameObjectType.ASSET:
                 this.showAssetProperties(obj as any);
@@ -79,13 +70,9 @@ export class PropertyPanel {
         }
     }
 
-    /**
-     * Asset 속성을 표시합니다.
-     */
     private showAssetProperties(obj: GameObject & { properties: AssetProperties }): void {
         this.addPropertyGroup("Asset", () => {
             this.addTextInput("Asset ID", obj.id, (value) => {
-                // Asset ID는 obj.id로 변경
                 (obj as any).id = value;
                 this.notifyPropertyChanged();
             });
@@ -93,7 +80,6 @@ export class PropertyPanel {
                 obj.properties.assetPath = value;
                 this.notifyPropertyChanged();
             });
-            // 크기 속성 추가
             const width = (obj as any).width ?? 40;
             const height = (obj as any).height ?? 40;
             this.addNumberInput("Width", width, (value) => {
@@ -107,9 +93,6 @@ export class PropertyPanel {
         });
     }
 
-    /**
-     * TextDisplay 속성을 표시합니다.
-     */
     private showTextDisplayProperties(obj: GameObject & { properties: TextDisplayProperties }): void {
         this.addPropertyGroup("Text Display", () => {
             this.addTextareaInput("Text", obj.properties.text ?? "", (value) => {
@@ -132,9 +115,6 @@ export class PropertyPanel {
         });
     }
 
-    /**
-     * 속성 그룹을 추가합니다.
-     */
     private addPropertyGroup(title: string, contentFn: () => void): void {
         const group = document.createElement("div");
         group.className = "property-group";
@@ -155,9 +135,6 @@ export class PropertyPanel {
         this.contentContainer = originalContainer;
     }
 
-    /**
-     * 숫자 입력 필드를 추가합니다.
-     */
     private addNumberInput(label: string, value: number, onChange: (value: number) => void): void {
         const group = document.createElement("div");
         group.className = "property-form-group";
@@ -179,9 +156,6 @@ export class PropertyPanel {
         this.contentContainer.appendChild(group);
     }
 
-    /**
-     * 텍스트 입력 필드를 추가합니다.
-     */
     private addTextInput(label: string, value: string, onChange: (value: string) => void): void {
         const group = document.createElement("div");
         group.className = "property-form-group";
@@ -201,9 +175,6 @@ export class PropertyPanel {
         this.contentContainer.appendChild(group);
     }
 
-    /**
-     * 텍스트 영역 입력 필드를 추가합니다.
-     */
     private addTextareaInput(label: string, value: string, onChange: (value: string) => void): void {
         const group = document.createElement("div");
         group.className = "property-form-group";
@@ -222,9 +193,6 @@ export class PropertyPanel {
         this.contentContainer.appendChild(group);
     }
 
-    /**
-     * 색상 입력 필드를 추가합니다.
-     */
     private addColorInput(label: string, value: string, onChange: (value: string) => void): void {
         const group = document.createElement("div");
         group.className = "property-form-group";
@@ -244,9 +212,6 @@ export class PropertyPanel {
         this.contentContainer.appendChild(group);
     }
 
-    /**
-     * 셀렉트 입력 필드를 추가합니다.
-     */
     private addSelectInput(
         label: string,
         value: string,
@@ -279,16 +244,10 @@ export class PropertyPanel {
         this.contentContainer.appendChild(group);
     }
 
-    /**
-     * 선택 없음 상태를 표시합니다.
-     */
     showNoSelection(): void {
         this.contentContainer.innerHTML = `<p class="no-selection">${t("editor.noSelection")}</p>`;
     }
 
-    /**
-     * 이벤트 리스너를 설정합니다.
-     */
     private setupEventListeners(): void {
         window.addEventListener("object-selected", ((e: Event) => {
             const customEvent = e as CustomEvent<GameObject | null>;
@@ -300,12 +259,8 @@ export class PropertyPanel {
         }) as EventListener);
     }
 
-    /**
-     * 속성 변경을 알립니다.
-     */
     private notifyPropertyChanged(): void {
         const event = new CustomEvent("property-changed");
         window.dispatchEvent(event);
     }
 }
-

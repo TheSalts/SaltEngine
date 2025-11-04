@@ -1,7 +1,3 @@
-/**
- * 다국어 지원 유틸리티
- */
-
 type TranslationKey = string;
 type Translations = Record<TranslationKey, string>;
 
@@ -35,25 +31,16 @@ const translations: Record<string, Translations> = {
 
 let currentLanguage: string = "ko-kr";
 
-/**
- * 현재 언어를 설정합니다.
- */
 export function setLanguage(lang: string): void {
     if (translations[lang]) {
         currentLanguage = lang;
     }
 }
 
-/**
- * 현재 언어를 반환합니다.
- */
 export function getLanguage(): string {
     return currentLanguage;
 }
 
-/**
- * 번역된 텍스트를 반환합니다.
- */
 export function t(key: TranslationKey): string {
     const langTranslations = translations[currentLanguage];
     if (!langTranslations) {
@@ -62,10 +49,6 @@ export function t(key: TranslationKey): string {
     return langTranslations[key] ?? key;
 }
 
-/**
- * 사용 가능한 언어 목록을 반환합니다.
- */
 export function getAvailableLanguages(): string[] {
     return Object.keys(translations);
 }
-

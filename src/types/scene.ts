@@ -1,8 +1,6 @@
 import type { GameObject } from "./gameObject.js";
+import type { Group } from "./group.js";
 
-/**
- * Layer 인터페이스
- */
 export interface Layer {
     id: number;
     name: string;
@@ -10,12 +8,6 @@ export interface Layer {
     locked: boolean;
 }
 
-import type { Group } from "./group.js";
-
-/**
- * Scene 인터페이스
- * 하나의 씬은 여러 게임 오브젝트를 포함할 수 있습니다.
- */
 export interface Scene {
     id: string;
     name: string;
@@ -24,18 +16,12 @@ export interface Scene {
     groups?: Group[];
 }
 
-/**
- * Scene 생성 시 사용하는 옵션
- */
 export interface CreateSceneOptions {
     name: string;
     gameObjects?: GameObject[];
     layers?: Layer[];
 }
 
-/**
- * Scene을 생성하는 헬퍼 함수
- */
 export function createScene(id: string, options: CreateSceneOptions): Scene {
     const defaultLayers: Layer[] = [
         { id: 0, name: "Default", visible: true, locked: false },
@@ -47,4 +33,3 @@ export function createScene(id: string, options: CreateSceneOptions): Scene {
         layers: options.layers ?? defaultLayers,
     };
 }
-

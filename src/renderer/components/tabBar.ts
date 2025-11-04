@@ -1,9 +1,5 @@
 import type { Scene } from "../../types/scene.js";
-import { createScene } from "../../types/scene.js";
 
-/**
- * 탭 바 컴포넌트
- */
 export class TabBar {
     private container: HTMLElement;
     private tabs: Map<string, HTMLElement> = new Map();
@@ -27,9 +23,6 @@ export class TabBar {
         this.render();
     }
 
-    /**
-     * 탭을 추가합니다.
-     */
     addTab(scene: Scene): void {
         const tabElement = this.createTabElement(scene);
         this.tabs.set(scene.id, tabElement);
@@ -44,9 +37,6 @@ export class TabBar {
         this.setActiveTab(scene.id);
     }
 
-    /**
-     * 모든 탭을 제거합니다.
-     */
     removeAllTabs(): void {
         for (const [sceneId] of this.tabs) {
             const tabElement = this.tabs.get(sceneId);
@@ -59,9 +49,6 @@ export class TabBar {
         this.render();
     }
 
-    /**
-     * 탭을 제거합니다.
-     */
     removeTab(sceneId: string): void {
         const tabElement = this.tabs.get(sceneId);
         if (tabElement) {
@@ -84,15 +71,11 @@ export class TabBar {
         }
     }
 
-    /**
-     * 활성 탭을 설정합니다.
-     */
     setActiveTab(sceneId: string): void {
         if (this.activeTabId === sceneId) {
             return;
         }
 
-        // 이전 활성 탭 비활성화
         if (this.activeTabId) {
             const prevTab = this.tabs.get(this.activeTabId);
             if (prevTab) {
@@ -100,7 +83,6 @@ export class TabBar {
             }
         }
 
-        // 새 활성 탭 설정
         this.activeTabId = sceneId;
         const activeTab = this.tabs.get(sceneId);
         if (activeTab) {
@@ -110,9 +92,6 @@ export class TabBar {
         this.onTabChange(sceneId);
     }
 
-    /**
-     * 탭의 이름을 업데이트합니다.
-     */
     updateTabName(sceneId: string, name: string): void {
         const tabElement = this.tabs.get(sceneId);
         if (tabElement) {
@@ -123,16 +102,10 @@ export class TabBar {
         }
     }
 
-    /**
-     * 현재 활성 탭 ID를 반환합니다.
-     */
     getActiveTabId(): string | null {
         return this.activeTabId;
     }
 
-    /**
-     * 탭 요소를 생성합니다.
-     */
     private createTabElement(scene: Scene): HTMLElement {
         const tab = document.createElement("div");
         tab.className = "tab";
@@ -164,9 +137,6 @@ export class TabBar {
         return tab;
     }
 
-    /**
-     * 탭 이름을 편집합니다.
-     */
     private editTabName(sceneId: string): void {
         const tabElement = this.tabs.get(sceneId);
         if (!tabElement) return;
@@ -218,9 +188,6 @@ export class TabBar {
         input.select();
     }
 
-    /**
-     * 탭 바를 렌더링합니다.
-     */
     private render(): void {
         this.container.innerHTML = "";
 
@@ -235,4 +202,3 @@ export class TabBar {
         this.container.appendChild(addButton);
     }
 }
-
