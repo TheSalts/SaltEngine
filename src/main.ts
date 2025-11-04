@@ -58,6 +58,30 @@ function createEditorWindow(projectData: unknown): void {
     const projectRoot = resolve(__dirname, "..");
     const editorPath = resolve(projectRoot, "src/renderer/editor.html");
     mainWindow.loadURL(pathToFileURL(editorPath).href);
+
+    // 창 닫기 전 저장 처리
+    mainWindow.on("close", async (e) => {
+        if (mainWindow) {
+            e.preventDefault();
+            
+            try {
+                // 렌더러 프로세스에 저장 요청
+                await mainWindow.webContents.executeJavaScript(`
+                    (async () => {
+                        if (window.hasUnsavedChanges && window.emergencySave) {
+                            await window.emergencySave();
+                        }
+                    })()
+                `);
+            } catch (error) {
+                console.error("저장 중 오류:", error);
+            }
+
+            // 저장 완료 후 창 닫기
+            mainWindow.destroy();
+            mainWindow = null;
+        }
+    });
 }
 
 app.on("ready", () => {
@@ -121,6 +145,77 @@ app.on("ready", () => {
         if (settingsWindow) {
             settingsWindow.close();
             settingsWindow = null;
+        }
+    });
+
+    // 새 창 열기
+    ipcMain.handle("window:open-new", (_event: unknown) => {
+        const newWindow = new BrowserWindow({
+            width: 1400,
+            height: 900,
+            webPreferences: {
+                contextIsolation: true,
+                nodeIntegration: false,
+                preload: join(__dirname, "preload.js"),
+            },
+        });
+
+        const projectRoot = resolve(__dirname, "..");
+        const welcomePath = resolve(projectRoot, "src/renderer/welcome.html");
+        newWindow.loadURL(pathToFileURL(welcomePath).href);
+
+        return true;
+    });
+
+    // 폴더 열기 (프로젝트 로드)
+    ipcMain.handle("project:open-folder", async (_event: unknown, folderPath: string, inNewWindow: boolean) => {
+        try {
+            // 프로젝트 파일 찾기
+            const fs = await import("node:fs/promises");
+            const path = await import("node:path");
+            
+            const files = await fs.readdir(folderPath);
+            const projectFiles = files.filter((file: string) => file.endsWith(".seproj"));
+            
+            if (projectFiles.length === 0) {
+                throw new Error("프로젝트 파일을 찾을 수 없습니다.");
+            }
+
+            // 첫 번째 프로젝트 파일 읽기
+            const projectFilePath = path.join(folderPath, projectFiles[0] as string);
+            const projectData = JSON.parse(await fs.readFile(projectFilePath, "utf-8"));
+
+            if (inNewWindow) {
+                // 새 창에서 열기
+                const newWindow = new BrowserWindow({
+                    width: 1400,
+                    height: 900,
+                    webPreferences: {
+                        contextIsolation: true,
+                        nodeIntegration: false,
+                        preload: join(__dirname, "preload.js"),
+                    },
+                });
+
+                const projectRoot = resolve(__dirname, "..");
+                const editorPath = resolve(projectRoot, "src/renderer/editor.html");
+                
+                // 새 창의 프로젝트 데이터 설정
+                newWindow.webContents.once("did-finish-load", () => {
+                    newWindow.webContents.send("project:load", projectData);
+                });
+                
+                newWindow.loadURL(pathToFileURL(editorPath).href);
+            } else {
+                // 현재 창에서 열기
+                currentProject = projectData;
+                createEditorWindow(projectData);
+            }
+
+            return { success: true, projectData };
+        } catch (error) {
+            console.error("폴더 열기 실패:", error);
+            return { success: false, error: (error as Error).message };
         }
     });
 

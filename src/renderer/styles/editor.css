@@ -275,36 +275,117 @@ body {
     gap: 0.5rem;
 }
 
-/* 저장 알림 */
-.save-notification {
+/* 저장 상태 표시 */
+.save-status {
+    margin-top: auto;
+    padding: 0.75rem;
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    text-align: center;
+    border-top: 1px solid var(--border);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.save-status.visible {
+    opacity: 1;
+}
+
+.save-status.saving {
+    color: #9ca3af;
+}
+
+.save-status.success {
+    color: #48bb78;
+}
+
+.save-status.error {
+    color: #f56565;
+}
+
+/* 모달 */
+.modal {
+    display: none;
     position: fixed;
-    bottom: 20px;
-    right: 20px;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.7);
+    z-index: 2000;
+    justify-content: center;
+    align-items: center;
+}
+
+.modal.show {
+    display: flex;
+}
+
+.modal-content {
+    background-color: var(--bg-secondary);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 2rem;
+    min-width: 400px;
+    max-width: 600px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+}
+
+.modal-content h3 {
+    margin: 0 0 1rem 0;
+    font-size: 1.25rem;
+    color: var(--text-primary);
+}
+
+.modal-content p {
+    margin: 0 0 1.5rem 0;
+    color: var(--text-secondary);
+    line-height: 1.5;
+}
+
+.modal-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.modal-btn {
     padding: 0.75rem 1.5rem;
-    background-color: var(--bg-tertiary);
     border: 1px solid var(--border);
     border-radius: 4px;
-    color: var(--text-primary);
     font-size: 0.9rem;
-    z-index: 1000;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
-    display: none;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-align: left;
 }
 
-.save-notification-saving {
-    background-color: #2d3748;
-    border-color: #4a5568;
+.modal-btn-primary {
+    background-color: var(--accent);
+    color: white;
+    border-color: var(--accent);
 }
 
-.save-notification-success {
-    background-color: #22543d;
-    border-color: #2f855a;
-    color: #c6f6d5;
+.modal-btn-primary:hover {
+    background-color: var(--accent-hover);
 }
 
-.save-notification-error {
-    background-color: #742a2a;
-    border-color: #9b2c2c;
-    color: #fed7d7;
+.modal-btn-secondary {
+    background-color: var(--bg-tertiary);
+    color: var(--text-primary);
+}
+
+.modal-btn-secondary:hover {
+    background-color: var(--bg-primary);
+    border-color: var(--accent);
+}
+
+.modal-btn-cancel {
+    background-color: transparent;
+    color: var(--text-secondary);
+}
+
+.modal-btn-cancel:hover {
+    background-color: var(--bg-tertiary);
+    color: var(--text-primary);
 }
 

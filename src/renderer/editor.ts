@@ -17,6 +17,9 @@ let activeSceneId: string | null = null;
 let canvasRenderer: CanvasRenderer | null = null;
 let propertyPanel: PropertyPanel | null = null;
 let historyManager: HistoryManager = new HistoryManager();
+let autoSaveTimer: NodeJS.Timeout | null = null;
+let hasUnsavedChanges: boolean = false;
+let autoSaveInterval: number = 30000; // 30초
 
 /**
  * 에디터 초기화
@@ -120,6 +123,12 @@ document.addEventListener("DOMContentLoaded", async () => {
     window.addEventListener("object-position-changed", () => {
         saveHistoryState();
     });
+
+    // 자동저장 시작
+    startAutoSave();
+
+    // 창 닫기 전 저장
+    setupBeforeUnloadHandler();
 });
 
 /**
@@ -162,9 +171,35 @@ function addNewScene(): void {
  * 툴바 버튼 이벤트를 설정합니다.
  */
 function setupToolbarButtons(): void {
+    const newWindowBtn = document.getElementById("newWindowBtn");
+    const openFolderBtn = document.getElementById("openFolderBtn");
     const addAssetBtn = document.getElementById("addAssetBtn");
     const addTextDisplayBtn = document.getElementById("addTextDisplayBtn");
     const saveBtn = document.getElementById("saveBtn");
+
+    // 새 창 열기
+    newWindowBtn?.addEventListener("click", async () => {
+        try {
+            await window.electronAPI.openNewWindow();
+        } catch (error) {
+            console.error("새 창 열기 실패:", error);
+            alert("새 창 열기에 실패했습니다.");
+        }
+    });
+
+    // 폴더 열기
+    openFolderBtn?.addEventListener("click", async () => {
+        try {
+            const folderPath = await window.electronAPI.selectFolder("프로젝트 폴더 선택");
+            if (!folderPath) return;
+
+            // 모달 표시
+            showOpenFolderModal(folderPath);
+        } catch (error) {
+            console.error("폴더 열기 실패:", error);
+            alert("폴더 열기에 실패했습니다.");
+        }
+    });
 
     addAssetBtn?.addEventListener("click", async () => {
         if (!activeSceneId || !currentProject) return;
@@ -299,6 +334,7 @@ async function saveProject(): Promise<void> {
     try {
         const { saveProject: saveProjectFn } = await import("../util/projectManager.js");
         await saveProjectFn(currentProject);
+        hasUnsavedChanges = false;
         showSaveNotification(t("editor.saved"), "success");
     } catch (error) {
         console.error("저장 실패:", error);
@@ -310,35 +346,27 @@ async function saveProject(): Promise<void> {
  * 저장 알림을 표시합니다.
  */
 function showSaveNotification(message: string, type: "saving" | "success" | "error"): void {
-    let notification = document.getElementById("saveNotification");
-    if (!notification) {
-        notification = document.createElement("div");
-        notification.id = "saveNotification";
-        notification.className = "save-notification";
-        document.body.appendChild(notification);
-    }
+    const saveStatus = document.getElementById("saveStatus");
+    if (!saveStatus) return;
 
-    notification.textContent = message;
-    notification.className = `save-notification save-notification-${type}`;
-    notification.style.display = "block";
-    notification.style.opacity = "1";
-    notification.style.transition = "opacity 0.5s ease-out";
+    // 이전 상태 클래스 제거
+    saveStatus.className = "save-status visible";
 
+    // 타입별 클래스 추가
+    saveStatus.classList.add(type);
+    saveStatus.textContent = message;
+
+    // 저장 중이 아니면 일정 시간 후 자동으로 숨김
     if (type === "success") {
         setTimeout(() => {
-            notification.style.opacity = "0";
-            setTimeout(() => {
-                notification.style.display = "none";
-            }, 500);
-        }, 2000);
+            saveStatus.classList.remove("visible");
+        }, 3000);
     } else if (type === "error") {
         setTimeout(() => {
-            notification.style.opacity = "0";
-            setTimeout(() => {
-                notification.style.display = "none";
-            }, 500);
-        }, 3000);
+            saveStatus.classList.remove("visible");
+        }, 5000);
     }
+    // "saving" 타입은 계속 표시됨 (다음 상태로 업데이트될 때까지)
 }
 
 /**
@@ -363,6 +391,7 @@ function saveHistoryState(): void {
     const currentScenes = Array.from(scenes.values());
     historyManager.pushState(currentScenes);
     updateUndoRedoButtons();
+    markAsChanged();
 }
 
 /**
@@ -445,6 +474,9 @@ export function setProject(project: Project): void {
         const firstSceneId = Array.from(scenes.keys())[0];
         if (firstSceneId) {
             tabBar.setActiveTab(firstSceneId);
+
+            // 작업 영역이 화면에 맞도록 자동 조정
+            canvasRenderer?.fitWorkspaceToView();
             canvasRenderer?.forceRender();
         }
     }
@@ -466,3 +498,171 @@ export function getCanvasRenderer(): CanvasRenderer | null {
 export function getCurrentProject(): Project | null {
     return currentProject;
 }
+
+/**
+ * 변경사항을 표시합니다.
+ */
+function markAsChanged(): void {
+    hasUnsavedChanges = true;
+}
+
+/**
+ * 자동저장을 시작합니다.
+ */
+function startAutoSave(): void {
+    if (autoSaveTimer) {
+        clearInterval(autoSaveTimer);
+    }
+
+    autoSaveTimer = setInterval(() => {
+        autoSaveProject();
+    }, autoSaveInterval);
+}
+
+/**
+ * 자동저장을 중지합니다.
+ */
+function stopAutoSave(): void {
+    if (autoSaveTimer) {
+        clearInterval(autoSaveTimer);
+        autoSaveTimer = null;
+    }
+}
+
+/**
+ * 자동으로 프로젝트를 저장합니다.
+ */
+async function autoSaveProject(): Promise<void> {
+    if (!currentProject || !hasUnsavedChanges) {
+        return;
+    }
+
+    // 현재 Scene들을 프로젝트에 반영
+    currentProject.scenes = Array.from(scenes.values());
+
+    try {
+        const { saveProject: saveProjectFn } = await import("../util/projectManager.js");
+        await saveProjectFn(currentProject);
+        hasUnsavedChanges = false;
+        showSaveNotification("자동 저장됨", "success");
+    } catch (error) {
+        console.error("자동 저장 실패:", error);
+    }
+}
+
+/**
+ * 창 닫기 전 저장 핸들러를 설정합니다.
+ */
+function setupBeforeUnloadHandler(): void {
+    // beforeunload 이벤트: 브라우저 창이 닫히거나 새로고침될 때
+    window.addEventListener("beforeunload", async (e) => {
+        if (hasUnsavedChanges && currentProject) {
+            // 변경사항이 있으면 마지막 저장 시도
+            e.preventDefault();
+            await emergencySave();
+        }
+    });
+
+    // unload 이벤트: 페이지가 완전히 언로드될 때
+    window.addEventListener("unload", async () => {
+        if (hasUnsavedChanges && currentProject) {
+            await emergencySave();
+        }
+    });
+
+    // 페이지 숨김 이벤트 (모바일/탭 전환 등)
+    document.addEventListener("visibilitychange", async () => {
+        if (document.hidden && hasUnsavedChanges && currentProject) {
+            await emergencySave();
+        }
+    });
+}
+
+/**
+ * 긴급 저장을 수행합니다.
+ */
+async function emergencySave(): Promise<void> {
+    if (!currentProject) return;
+
+    // 현재 Scene들을 프로젝트에 반영
+    currentProject.scenes = Array.from(scenes.values());
+
+    try {
+        const { saveProject: saveProjectFn } = await import("../util/projectManager.js");
+        await saveProjectFn(currentProject);
+        hasUnsavedChanges = false;
+        console.log("긴급 저장 완료");
+    } catch (error) {
+        console.error("긴급 저장 실패:", error);
+    }
+}
+
+/**
+ * 폴더 열기 모달을 표시합니다.
+ */
+function showOpenFolderModal(folderPath: string): void {
+    const modal = document.getElementById("openFolderModal");
+    if (!modal) return;
+
+    modal.classList.add("show");
+
+    // 새 창에서 열기
+    const openInNewWindowBtn = document.getElementById("openInNewWindowBtn");
+    const newWindowHandler = async () => {
+        try {
+            await window.electronAPI.openFolder(folderPath, true);
+            modal.classList.remove("show");
+            cleanup();
+        } catch (error) {
+            console.error("폴더 열기 실패:", error);
+            alert("폴더 열기에 실패했습니다.");
+        }
+    };
+
+    // 현재 창에서 열기
+    const openInCurrentWindowBtn = document.getElementById("openInCurrentWindowBtn");
+    const currentWindowHandler = async () => {
+        try {
+            await window.electronAPI.openFolder(folderPath, false);
+            modal.classList.remove("show");
+            cleanup();
+        } catch (error) {
+            console.error("폴더 열기 실패:", error);
+            alert("폴더 열기에 실패했습니다.");
+        }
+    };
+
+    // 취소
+    const cancelBtn = document.getElementById("cancelOpenFolderBtn");
+    const cancelHandler = () => {
+        modal.classList.remove("show");
+        cleanup();
+    };
+
+    // 이벤트 리스너 정리 함수
+    const cleanup = () => {
+        openInNewWindowBtn?.removeEventListener("click", newWindowHandler);
+        openInCurrentWindowBtn?.removeEventListener("click", currentWindowHandler);
+        cancelBtn?.removeEventListener("click", cancelHandler);
+        modal.removeEventListener("click", outsideClickHandler);
+    };
+
+    // 모달 외부 클릭 시 닫기
+    const outsideClickHandler = (e: MouseEvent) => {
+        if (e.target === modal) {
+            modal.classList.remove("show");
+            cleanup();
+        }
+    };
+
+    openInNewWindowBtn?.addEventListener("click", newWindowHandler);
+    openInCurrentWindowBtn?.addEventListener("click", currentWindowHandler);
+    cancelBtn?.addEventListener("click", cancelHandler);
+    modal.addEventListener("click", outsideClickHandler);
+}
+
+// 전역 객체에 긴급 저장 함수와 변경사항 플래그 노출 (Electron 창 닫기에서 사용)
+(window as any).emergencySave = emergencySave;
+Object.defineProperty(window, "hasUnsavedChanges", {
+    get: () => hasUnsavedChanges,
+});

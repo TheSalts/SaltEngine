@@ -106,6 +106,17 @@ const electronAPI = {
      */
     readImageAsBase64: (filePath: string) =>
         ipcRenderer.invoke("fs:read-image-base64", filePath),
+
+    /**
+     * 새 창 열기
+     */
+    openNewWindow: () => ipcRenderer.invoke("window:open-new"),
+
+    /**
+     * 폴더 열기 (프로젝트 로드)
+     */
+    openFolder: (folderPath: string, inNewWindow: boolean) =>
+        ipcRenderer.invoke("project:open-folder", folderPath, inNewWindow),
 };
 
 contextBridge.exposeInMainWorld("electronAPI", electronAPI);

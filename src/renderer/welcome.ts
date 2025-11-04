@@ -1,6 +1,7 @@
 import type { Project, AspectRatio } from "../types/project.js";
 import type { Scene } from "../types/scene.js";
 import { createProject } from "../types/project.js";
+import { saveProject } from "../util/projectManager.js";
 
 let projectPath: string | null = null;
 let datapackPath: string | null = null;
@@ -142,6 +143,25 @@ document.addEventListener("DOMContentLoaded", () => {
             aspectRatio,
             minecraftVersion,
         });
+
+        // 프로젝트 폴더 생성
+        try {
+            await window.electronAPI.createFolder(projectPath);
+        } catch (error) {
+            console.error("프로젝트 폴더 생성 실패:", error);
+            alert("프로젝트 폴더 생성에 실패했습니다.");
+            return;
+        }
+
+        // 프로젝트 파일 자동 저장
+        try {
+            await saveProject(project);
+            console.log(`프로젝트 파일이 생성되었습니다: ${projectPath}/${projectName}.salt.json`);
+        } catch (error) {
+            console.error("프로젝트 파일 생성 실패:", error);
+            alert("프로젝트 파일 생성에 실패했습니다.");
+            return;
+        }
 
         await switchToEditor(project);
     });

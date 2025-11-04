@@ -1,4 +1,5 @@
 import type { Scene } from "./scene.js";
+import { createScene } from "./scene.js";
 
 /**
  * 모니터 비율 타입
@@ -41,6 +42,12 @@ export interface CreateProjectOptions {
  * Project를 생성하는 헬퍼 함수
  */
 export function createProject(options: CreateProjectOptions): Project {
+    // 기본 Scene 생성
+    const defaultScene = createScene("scene_1", {
+        name: "Scene 1",
+        gameObjects: [],
+    });
+
     return {
         name: options.name,
         path: options.path,
@@ -48,7 +55,7 @@ export function createProject(options: CreateProjectOptions): Project {
         resourcepackPath: options.resourcepackPath,
         aspectRatio: options.aspectRatio ?? "16:9",
         minecraftVersion: options.minecraftVersion ?? "1.21.8",
-        scenes: options.scenes ?? [],
+        scenes: options.scenes ?? [defaultScene],
     };
 }
 

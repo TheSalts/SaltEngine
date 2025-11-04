@@ -5,6 +5,14 @@
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <title>SaltEngine - 에디터</title>
         <link rel="stylesheet" href="styles/editor.css" />
+        <script type="importmap">
+            {
+                "imports": {
+                    "three": "../../node_modules/three/build/three.module.js",
+                    "three/": "../../node_modules/three/"
+                }
+            }
+        </script>
     </head>
     <body>
         <div class="editor-container">
@@ -16,31 +24,26 @@
                 <!-- 툴바 -->
                 <div class="toolbar">
                     <div class="toolbar-group">
-                        <button id="addAssetBtn" class="tool-btn" title="Asset 추가">
-                            🖼️ Asset
-                        </button>
-                        <button id="addTextDisplayBtn" class="tool-btn" title="Text Display 추가">
-                            📝 Text
-                        </button>
+                        <button id="newWindowBtn" class="tool-btn" title="새 창 열기">🪟 새 창</button>
+                        <button id="openFolderBtn" class="tool-btn" title="폴더 열기">📁 폴더 열기</button>
                     </div>
                     <div class="toolbar-group">
-                        <button id="undoBtn" class="tool-btn" title="Undo (Ctrl+Z)" disabled>
-                            ↶ Undo
-                        </button>
-                        <button id="redoBtn" class="tool-btn" title="Redo (Ctrl+Shift+Z)" disabled>
-                            ↷ Redo
-                        </button>
+                        <button id="addAssetBtn" class="tool-btn" title="Asset 추가">🖼️ Asset</button>
+                        <button id="addTextDisplayBtn" class="tool-btn" title="Text Display 추가">📝 Text</button>
                     </div>
                     <div class="toolbar-group">
-                        <button id="saveBtn" class="tool-btn" title="저장">
-                            💾 저장
-                        </button>
+                        <button id="undoBtn" class="tool-btn" title="Undo (Ctrl+Z)" disabled>↶ Undo</button>
+                        <button id="redoBtn" class="tool-btn" title="Redo (Ctrl+Shift+Z)" disabled>↷ Redo</button>
                     </div>
                     <div class="toolbar-group">
-                        <button id="settingsBtn" class="tool-btn" title="설정">
-                            ⚙️ 설정
-                        </button>
+                        <button id="saveBtn" class="tool-btn" title="저장">💾 저장</button>
                     </div>
+                    <div class="toolbar-group">
+                        <button id="settingsBtn" class="tool-btn" title="설정">⚙️ 설정</button>
+                    </div>
+
+                    <!-- 저장 상태 표시 -->
+                    <div id="saveStatus" class="save-status"></div>
                 </div>
 
                 <!-- 캔버스 영역 -->
@@ -60,7 +63,21 @@
             </div>
         </div>
 
+        <!-- 폴더 열기 모달 -->
+        <div id="openFolderModal" class="modal">
+            <div class="modal-content">
+                <h3>폴더 열기</h3>
+                <p>선택한 폴더를 어떻게 열까요?</p>
+                <div class="modal-buttons">
+                    <button id="openInNewWindowBtn" class="modal-btn modal-btn-primary">🪟 새 창에서 열기</button>
+                    <button id="openInCurrentWindowBtn" class="modal-btn modal-btn-secondary">
+                        📂 현재 창에서 열기
+                    </button>
+                    <button id="cancelOpenFolderBtn" class="modal-btn modal-btn-cancel">취소</button>
+                </div>
+            </div>
+        </div>
+
         <script type="module" src="../../dist/renderer/editor.js"></script>
     </body>
 </html>
-

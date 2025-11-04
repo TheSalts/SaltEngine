@@ -1,4 +1,5 @@
 import type { Animation } from "./animation.js";
+import * as THREE from "three";
 
 /**
  * GameObject의 기본 인터페이스
@@ -20,6 +21,19 @@ export interface GameObject {
 export enum GameObjectType {
     ASSET = "asset",
     TEXT_DISPLAY = "text_display",
+    MESH_3D = "mesh_3d",
+}
+
+/**
+ * 3D 메쉬 타입
+ */
+export enum MeshType {
+    BOX = "box",
+    SPHERE = "sphere",
+    CYLINDER = "cylinder",
+    CONE = "cone",
+    TORUS = "torus",
+    PLANE = "plane",
 }
 
 /**
@@ -47,6 +61,20 @@ export interface TextDisplayProperties {
     backgroundColor?: string;
     textColor?: string;
     alignment?: "left" | "center" | "right";
+}
+
+/**
+ * 3D 메쉬 오브젝트의 추가 속성
+ */
+export interface Mesh3DProperties {
+    meshType: MeshType;
+    color?: number;
+    wireframe?: boolean;
+    width?: number;
+    height?: number;
+    depth?: number;
+    radius?: number;
+    segments?: number;
 }
 
 /**
@@ -103,3 +131,29 @@ export class TextDisplayObject implements GameObject {
     }
 }
 
+/**
+ * 3D 메쉬 게임 오브젝트
+ */
+export class Mesh3DObject implements GameObject {
+    id: string;
+    type: GameObjectType;
+    position: Vector2;
+    rotation: number;
+    scale: Vector2;
+    properties: Mesh3DProperties;
+
+    constructor(
+        id: string,
+        position: Vector2 = { x: 0, y: 0 },
+        rotation: number = 0,
+        scale: Vector2 = { x: 1, y: 1 },
+        properties: Mesh3DProperties = { meshType: MeshType.BOX, color: 0x00aaff }
+    ) {
+        this.id = id;
+        this.type = GameObjectType.MESH_3D;
+        this.position = position;
+        this.rotation = rotation;
+        this.scale = scale;
+        this.properties = properties;
+    }
+}
