@@ -95,10 +95,10 @@ export class TabBar {
     updateTabName(sceneId: string, name: string): void {
         const tabElement = this.tabs.get(sceneId);
         if (tabElement) {
-        const label = tabElement.querySelector(".tab-label");
-        if (label) {
-            label.textContent = name ?? "";
-        }
+            const label = tabElement.querySelector(".tab-label");
+            if (label) {
+                label.textContent = name ?? "";
+            }
         }
     }
 

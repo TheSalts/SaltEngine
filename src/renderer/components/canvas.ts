@@ -25,10 +25,7 @@ export class CanvasRenderer {
     private aspectRatio: string = "16:9";
     private workspaceBounds: { width: number; height: number } = { width: 1920, height: 1080 };
     private meshMap: Map<string, THREE.Group> = new Map();
-    private selectionBoxHelper: THREE.LineSegments | null = null;
-    private snapLineHelpers: THREE.Group | null = null;
     private raycaster: THREE.Raycaster = new THREE.Raycaster();
-    private mouse: THREE.Vector2 = new THREE.Vector2();
     private gridHelper: THREE.Group | null = null;
     private workspaceBorder: THREE.Line | null = null;
     private fov: number = 70;
@@ -70,7 +67,6 @@ export class CanvasRenderer {
         this.animate();
     }
 
-    
     private animate(): void {
         requestAnimationFrame(() => this.animate());
         this.renderer.render(this.scene, this.camera);
@@ -114,7 +110,6 @@ export class CanvasRenderer {
         this.scene.add(this.gridHelper);
     }
 
-    
     private createWorkspaceBorder(): void {
         if (this.workspaceBorder) {
             this.scene.remove(this.workspaceBorder);
@@ -145,9 +140,7 @@ export class CanvasRenderer {
         this.scene.add(this.workspaceBorder);
     }
 
-    
     private setupLights(): void {
-
         const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
         this.scene.add(ambientLight);
 
@@ -160,7 +153,6 @@ export class CanvasRenderer {
         this.scene.add(pointLight);
     }
 
-    
     resize(): void {
         const rect = this.container.getBoundingClientRect();
         const width = rect.width;
@@ -179,7 +171,6 @@ export class CanvasRenderer {
         this.render();
     }
 
-    
     private setupWorkspace(): void {
         const [widthRatio, heightRatio] = this.aspectRatio.split(":").map(Number) as [number, number];
 
@@ -194,7 +185,6 @@ export class CanvasRenderer {
         };
     }
 
-    
     public fitWorkspaceToView(): void {
         const rect = this.container.getBoundingClientRect();
         const canvasWidth = rect.width;
@@ -218,7 +208,6 @@ export class CanvasRenderer {
         this.scale = Math.max(0.1, Math.min(5.0, this.scale));
     }
 
-    
     render(): void {
         const scene = getActiveScene();
         if (!scene) {
@@ -239,7 +228,6 @@ export class CanvasRenderer {
         });
 
         for (const obj of sortedObjects) {
-
             const objLayer = obj.layer ?? 0;
             const layer = scene.layers?.find((l) => l.id === objLayer);
             if (layer && !layer.visible) {
@@ -255,9 +243,7 @@ export class CanvasRenderer {
         this.renderSnapLines();
     }
 
-    
     private clearScene(): void {
-
         const objectsToRemove = this.scene.children.filter(
             (child) => child !== this.gridHelper && child !== this.workspaceBorder && !(child instanceof THREE.Light)
         );
@@ -267,7 +253,6 @@ export class CanvasRenderer {
         this.meshMap.clear();
     }
 
-    
     private renderObject(obj: GameObject): void {
         const group = new THREE.Group();
         group.position.set(obj.position.x, obj.position.y, 0);
@@ -294,7 +279,6 @@ export class CanvasRenderer {
         this.meshMap.set(obj.id, group);
     }
 
-    
     private renderAssetSync(obj: AssetObject, group: THREE.Group): void {
         const assetPath = obj.properties?.assetPath;
         const project = getCurrentProject();
@@ -315,7 +299,6 @@ export class CanvasRenderer {
                 group.add(mesh);
                 return;
             } else if (cachedTexture === undefined) {
-
                 this.loadImage(fullPath).then(() => {
                     this.render();
                 });
@@ -337,7 +320,6 @@ export class CanvasRenderer {
         group.add(line);
     }
 
-    
     private async loadImage(path: string): Promise<THREE.Texture | null> {
         if (this.imageCache.has(path)) {
             return this.imageCache.get(path) ?? null;
@@ -352,7 +334,6 @@ export class CanvasRenderer {
                 loader.load(
                     base64,
                     (texture) => {
-
                         texture.colorSpace = THREE.SRGBColorSpace;
 
                         texture.minFilter = THREE.LinearFilter;
@@ -374,7 +355,6 @@ export class CanvasRenderer {
         }
     }
 
-    
     private renderTextDisplay(obj: GameObject, group: THREE.Group): void {
         const textObj = obj as any;
         const text = textObj.properties?.text ?? "Text";
@@ -410,7 +390,6 @@ export class CanvasRenderer {
         group.add(mesh);
     }
 
-    
     private render3DMesh(obj: Mesh3DObject, group: THREE.Group): void {
         const {
             meshType,
@@ -459,7 +438,6 @@ export class CanvasRenderer {
         group.add(mesh);
     }
 
-    
     private getObjectBounds(obj: GameObject, applyScale: boolean = true): { width: number; height: number } {
         let baseWidth: number;
         let baseHeight: number;
@@ -497,9 +475,7 @@ export class CanvasRenderer {
         }
     }
 
-    
     private renderSelection(obj: GameObject, group: THREE.Group): void {
-
         const bounds = this.getObjectBounds(obj, false);
         const halfWidth = bounds.width / 2;
         const halfHeight = bounds.height / 2;
@@ -516,10 +492,8 @@ export class CanvasRenderer {
         const material = new THREE.LineBasicMaterial({ color: 0x007acc, linewidth: 2 });
         const line = new THREE.Line(geometry, material);
         group.add(line);
-
     }
 
-    
     private renderSelectionBox(): void {
         const rect = this.container.getBoundingClientRect();
         const startWorld = this.screenToWorld(this.selectionStart.x - rect.left, this.selectionStart.y - rect.top);
@@ -538,7 +512,6 @@ export class CanvasRenderer {
         this.scene.add(line);
     }
 
-    
     private renderSnapLines(): void {
         if (!this.snapLines.x && !this.snapLines.y) return;
 
@@ -580,7 +553,6 @@ export class CanvasRenderer {
         }
     }
 
-    
     private screenToWorld(screenX: number, screenY: number): Vector2 {
         const rect = this.container.getBoundingClientRect();
         const x = (screenX / rect.width) * 2 - 1;
@@ -595,7 +567,6 @@ export class CanvasRenderer {
         return { x: intersectionPoint.x, y: intersectionPoint.y };
     }
 
-    
     private setupEventListeners(): void {
         this.renderer.domElement.addEventListener("mousedown", (e: MouseEvent) => this.onMouseDown(e));
         this.renderer.domElement.addEventListener("mousemove", (e: MouseEvent) => this.onMouseMove(e));
@@ -606,7 +577,6 @@ export class CanvasRenderer {
         window.addEventListener("keydown", (e: KeyboardEvent) => this.onKeyDown(e));
     }
 
-    
     private onMouseDown(e: MouseEvent): void {
         e.preventDefault();
         const rect = this.container.getBoundingClientRect();
@@ -623,13 +593,11 @@ export class CanvasRenderer {
         }
 
         if (e.button === 0) {
-
             if (this.selectedObjects.size === 1) {
                 const obj = Array.from(this.selectedObjects)[0];
                 if (obj) {
                     const handleIndex = this.getHandleAt(worldPos.x, worldPos.y, obj);
                     if (handleIndex >= 0) {
-
                         this.isResizing = true;
                         this.resizeHandle = handleIndex;
                         this.dragStart = { x: worldPos.x, y: worldPos.y };
@@ -677,7 +645,6 @@ export class CanvasRenderer {
         }
     }
 
-    
     private onMouseMove(e: MouseEvent): void {
         const rect = this.container.getBoundingClientRect();
         const worldPos = this.screenToWorld(e.clientX - rect.left, e.clientY - rect.top);
@@ -685,7 +652,6 @@ export class CanvasRenderer {
         if (this.isResizing && this.selectedObjects.size === 1) {
             const obj = Array.from(this.selectedObjects)[0];
             if (obj) {
-
                 const initialPosition = (this as any).initialPosition as Vector2;
                 const initialScale = (this as any).initialScale as Vector2;
                 const baseBounds = this.getObjectBounds(obj, false); // 스케일 미적용 원본 크기
@@ -736,7 +702,6 @@ export class CanvasRenderer {
                 let newHeightLocal: number;
 
                 if (e.altKey) {
-
                     const currentHandle = handles[this.resizeHandle]!;
 
                     const deltaFromCenter = {
@@ -747,31 +712,25 @@ export class CanvasRenderer {
                     const handleType = this.getHandleType(this.resizeHandle);
 
                     if (handleType === "corner") {
-
                         newWidthLocal = Math.abs(deltaFromCenter.x) * 2;
                         newHeightLocal = Math.abs(deltaFromCenter.y) * 2;
                     } else if (handleType === "horizontal") {
-
                         newWidthLocal = Math.abs(deltaFromCenter.x) * 2;
                         newHeightLocal = initialHeight;
                     } else {
-
                         newWidthLocal = initialWidth;
                         newHeightLocal = Math.abs(deltaFromCenter.y) * 2;
                     }
                 } else {
-
                     newWidthLocal = mouseRotated.x - anchorLocal.x;
                     newHeightLocal = mouseRotated.y - anchorLocal.y;
 
                     const handleType = this.getHandleType(this.resizeHandle);
 
                     if (handleType === "horizontal") {
-
                         newHeightLocal = initialHeight;
                     }
                     if (handleType === "vertical") {
-
                         newWidthLocal = initialWidth;
                     }
                 }
@@ -795,26 +754,21 @@ export class CanvasRenderer {
                 obj.scale.y = absHeight / initialProps.height;
 
                 if (e.altKey) {
-
                     obj.position.x = initialProps.position.x;
                     obj.position.y = initialProps.position.y;
                 } else {
-
                     let newCenterLocalX: number;
                     let newCenterLocalY: number;
 
                     if (handleType === "horizontal") {
-
                         const signWidth = newWidthLocal >= 0 ? 1 : -1;
                         newCenterLocalX = anchorLocal.x + (absWidth * signWidth) / 2;
                         newCenterLocalY = 0;
                     } else if (handleType === "vertical") {
-
                         const signHeight = newHeightLocal >= 0 ? 1 : -1;
                         newCenterLocalX = 0;
                         newCenterLocalY = anchorLocal.y + (absHeight * signHeight) / 2;
                     } else {
-
                         const signWidth = newWidthLocal >= 0 ? 1 : -1;
                         const signHeight = newHeightLocal >= 0 ? 1 : -1;
                         newCenterLocalX = anchorLocal.x + (absWidth * signWidth) / 2;
@@ -892,7 +846,6 @@ export class CanvasRenderer {
             this.onSelectionChanged();
             this.render();
         } else {
-
             if (this.selectedObjects.size === 1) {
                 const obj = Array.from(this.selectedObjects)[0];
                 if (obj) {
@@ -900,7 +853,6 @@ export class CanvasRenderer {
                     if (handleIndex >= 0) {
                         const handleType = this.getHandleType(handleIndex);
                         if (handleType === "corner") {
-
                             if (handleIndex === 0 || handleIndex === 2) {
                                 this.renderer.domElement.style.cursor = "nesw-resize";
                             } else {
@@ -919,7 +871,6 @@ export class CanvasRenderer {
         }
     }
 
-    
     private getHandleAt(x: number, y: number, obj: GameObject): number {
         const bounds = this.getObjectBounds(obj);
         const halfWidth = bounds.width / 2;
@@ -963,9 +914,7 @@ export class CanvasRenderer {
                 if (Math.abs(hdx) < handleSize && Math.abs(hdy) < halfHeight) {
                     return handle.index;
                 }
-            }
-
-            else if (handle.type === "vertical") {
+            } else if (handle.type === "vertical") {
                 if (Math.abs(hdx) < halfWidth && Math.abs(hdy) < handleSize) {
                     return handle.index;
                 }
@@ -975,7 +924,6 @@ export class CanvasRenderer {
         return -1;
     }
 
-    
     private getHandleType(handleIndex: number): "corner" | "horizontal" | "vertical" {
         if (handleIndex >= 0 && handleIndex <= 3) {
             return "corner";
@@ -987,7 +935,6 @@ export class CanvasRenderer {
         return "corner";
     }
 
-    
     private snapToGridAndObjects(
         x: number,
         y: number,
@@ -1039,7 +986,6 @@ export class CanvasRenderer {
         return result;
     }
 
-    
     private onMouseUp(): void {
         if (this.isSelecting) {
             const rect = this.container.getBoundingClientRect();
@@ -1083,7 +1029,6 @@ export class CanvasRenderer {
         this.render();
     }
 
-    
     private onWheel(e: WheelEvent): void {
         e.preventDefault();
 
@@ -1094,7 +1039,6 @@ export class CanvasRenderer {
         this.render();
     }
 
-    
     private onKeyDown(e: KeyboardEvent): void {
         if ((e.key === "Delete" || e.key === "Backspace") && this.selectedObjects.size > 0) {
             e.preventDefault();
@@ -1102,7 +1046,6 @@ export class CanvasRenderer {
         }
     }
 
-    
     deleteSelectedObjects(): void {
         const scene = getActiveScene();
         if (!scene) return;
@@ -1122,7 +1065,6 @@ export class CanvasRenderer {
         window.dispatchEvent(event);
     }
 
-    
     private isPointInObject(x: number, y: number, obj: GameObject): boolean {
         const bounds = this.getObjectBounds(obj);
         const halfWidth = bounds.width / 2;
@@ -1138,7 +1080,6 @@ export class CanvasRenderer {
         return Math.abs(rotatedX) <= halfWidth && Math.abs(rotatedY) <= halfHeight;
     }
 
-    
     private onSelectionChanged(): void {
         const selectedArray = Array.from(this.selectedObjects);
         const selectedObj: GameObject | null = selectedArray.length === 1 && selectedArray[0] ? selectedArray[0] : null;
@@ -1148,18 +1089,15 @@ export class CanvasRenderer {
         window.dispatchEvent(event);
     }
 
-    
     forceRender(): void {
         this.render();
     }
 
-    
     getSelectedObject(): GameObject | null {
         const selectedArray = Array.from(this.selectedObjects);
         return selectedArray.length === 1 && selectedArray[0] ? selectedArray[0] : null;
     }
 
-    
     getSelectedObjects(): GameObject[] {
         return Array.from(this.selectedObjects);
     }

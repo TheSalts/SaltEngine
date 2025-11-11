@@ -107,11 +107,15 @@ export class PropertyPanel {
                 obj.properties.backgroundColor = value;
                 this.notifyPropertyChanged();
             });
-            this.addSelectInput("Alignment", obj.properties.alignment ?? "left", 
-                ["left", "center", "right"], (value) => {
+            this.addSelectInput(
+                "Alignment",
+                obj.properties.alignment ?? "left",
+                ["left", "center", "right"],
+                (value) => {
                     obj.properties.alignment = value as "left" | "center" | "right";
                     this.notifyPropertyChanged();
-                });
+                }
+            );
         });
     }
 
@@ -212,12 +216,7 @@ export class PropertyPanel {
         this.contentContainer.appendChild(group);
     }
 
-    private addSelectInput(
-        label: string,
-        value: string,
-        options: string[],
-        onChange: (value: string) => void
-    ): void {
+    private addSelectInput(label: string, value: string, options: string[], onChange: (value: string) => void): void {
         const group = document.createElement("div");
         group.className = "property-form-group";
 

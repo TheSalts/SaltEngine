@@ -61,7 +61,7 @@ function createEditorWindow(projectData: unknown): void {
     mainWindow.on("close", async (e) => {
         if (mainWindow) {
             e.preventDefault();
-            
+
             try {
                 await mainWindow.webContents.executeJavaScript(`
                     (async () => {
@@ -160,10 +160,10 @@ app.on("ready", () => {
         try {
             const fs = await import("node:fs/promises");
             const path = await import("node:path");
-            
+
             const files = await fs.readdir(folderPath);
             const projectFiles = files.filter((file: string) => file.endsWith(".seproj"));
-            
+
             if (projectFiles.length === 0) {
                 throw new Error("프로젝트 파일을 찾을 수 없습니다.");
             }
@@ -184,11 +184,11 @@ app.on("ready", () => {
 
                 const projectRoot = resolve(__dirname, "..");
                 const editorPath = resolve(projectRoot, "src/renderer/editor.html");
-                
+
                 newWindow.webContents.once("did-finish-load", () => {
                     newWindow.webContents.send("project:load", projectData);
                 });
-                
+
                 newWindow.loadURL(pathToFileURL(editorPath).href);
             } else {
                 currentProject = projectData;

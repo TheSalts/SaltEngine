@@ -60,7 +60,6 @@ document.addEventListener("DOMContentLoaded", async () => {
     if (scenes.size === 0) {
         addNewScene();
     } else {
-
         saveHistoryState();
     }
 
@@ -116,7 +115,6 @@ document.addEventListener("DOMContentLoaded", async () => {
 });
 
 async function initializeEditor(): Promise<void> {
-
     try {
         const projectData = await window.electronAPI.getCurrentProject?.();
         if (projectData) {
@@ -178,7 +176,6 @@ function setupToolbarButtons(): void {
         if (!scene) return;
 
         try {
-
             const imagePath = await window.electronAPI.selectImageFile();
             if (!imagePath) return;
 
@@ -319,7 +316,6 @@ function showSaveNotification(message: string, type: "saving" | "success" | "err
             saveStatus.classList.remove("visible");
         }, 5000);
     }
-
 }
 
 export function getActiveScene(): Scene | null {
@@ -459,10 +455,8 @@ async function autoSaveProject(): Promise<void> {
 }
 
 function setupBeforeUnloadHandler(): void {
-
     window.addEventListener("beforeunload", async (e) => {
         if (hasUnsavedChanges && currentProject) {
-
             e.preventDefault();
             await emergencySave();
         }

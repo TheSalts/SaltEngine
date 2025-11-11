@@ -23,9 +23,7 @@ export interface CreateSceneOptions {
 }
 
 export function createScene(id: string, options: CreateSceneOptions): Scene {
-    const defaultLayers: Layer[] = [
-        { id: 0, name: "Default", visible: true, locked: false },
-    ];
+    const defaultLayers: Layer[] = [{ id: 0, name: "Default", visible: true, locked: false }];
     return {
         id,
         name: options.name,
