@@ -1,7 +1,7 @@
 import type { Project, AspectRatio } from "../types/project.js";
 import type { Scene } from "../types/scene.js";
 import { createProject } from "../types/project.js";
-import { saveProject } from "../util/projectManager.js";
+import { saveProject, initPacks } from "../util/projectManager.js";
 
 let projectPath: string | null = null;
 let datapackPath: string | null = null;
@@ -121,6 +121,14 @@ document.addEventListener("DOMContentLoaded", () => {
         } catch (error) {
             console.error("폴더 생성 실패:", error);
             alert("폴더 생성에 실패했습니다.");
+            return;
+        }
+
+        try {
+            await initPacks(finalDatapackPath, finalResourcepackPath);
+        } catch (error) {
+            console.error("Datapack/Resourcepack 초기화 실패:", error);
+            alert("Datapack/Resourcepack 초기화에 실패했습니다.");
             return;
         }
 

@@ -1,6 +1,5 @@
 import type { AspectRatio } from "../types/project.js";
 import { AspectRatioEnum } from "../types/project.js";
-import path from "node:path";
 /**
  * Transform Vector2 to player view vector3
  *
@@ -18,7 +17,7 @@ function convert2DToLocal(
 ): { x: string; y: string; z: string } {
     if (!distance) distance = 10;
     if (!ratio) ratio = AspectRatioEnum.ratio16v9;
-    const Y_FACTOR = 0.700207538;
+    const Y_FACTOR = 0.700207538; // tan((FOV / 2) * PI / 180)
     let X_FACTOR: number = Y_FACTOR * (16 / 9);
     switch (ratio) {
         case AspectRatioEnum.ratio16v9:

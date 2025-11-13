@@ -1,0 +1,4 @@
+export const DATAPACK_FORMAT = 88;
+export const DATAPACK_SUPPORTED_FORMATS = [88, 88];
+export const RESOURCEPACK_FORMAT = 69;
+export const RESOURCEPACK_SUPPORTED_FORMATS = [46, 69];

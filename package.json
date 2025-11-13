@@ -17,15 +17,59 @@
     "scripts": {
         "test": "echo \"Error: no test specified\" && exit 1",
         "build": "tsc && tsc -p tsconfig.preload.json",
-        "start": "npm run build && electron ."
+        "start": "npm run build && electron .",
+        "build:win": "npm run build && electron-builder --win",
+        "build:mac": "npm run build && electron-builder --mac",
+        "build:all": "npm run build && electron-builder --win --mac"
     },
     "dependencies": {
-        "electron": "^39.0.0",
-        "electron-builder": "^26.0.12",
         "three": "^0.170.0",
         "typescript": "^5.9.3"
     },
     "devDependencies": {
-        "@types/three": "^0.170.0"
+        "@types/three": "^0.170.0",
+        "electron": "^39.0.0",
+        "electron-builder": "^26.0.12"
+    },
+    "build": {
+        "appId": "com.saltengine.app",
+        "productName": "SaltEngine",
+        "directories": {
+            "output": "release"
+        },
+        "files": [
+            "dist/**/*",
+            "src/renderer/**/*.html",
+            "src/renderer/**/*.css",
+            "package.json"
+        ],
+        "win": {
+            "target": [
+                {
+                    "target": "nsis",
+                    "arch": [
+                        "x64"
+                    ]
+                }
+            ],
+            "icon": "build/icon.ico"
+        },
+        "mac": {
+            "target": [
+                {
+                    "target": "dmg",
+                    "arch": [
+                        "x64",
+                        "arm64"
+                    ]
+                }
+            ],
+            "category": "public.app-category.developer-tools",
+            "icon": "build/icon.icns"
+        },
+        "nsis": {
+            "oneClick": false,
+            "allowToChangeInstallationDirectory": true
+        }
     }
 }
